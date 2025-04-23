@@ -7,6 +7,9 @@ import CitySection from "./CitySection";
 import ReasonSection from "./ReasonSection";
 import OurPeopleSection from "./OurPeopleSection";
 import FaqsSection from "./FaqsSection";
+import MobileAppSection from "./MobileAppSection";
+import ContactFormSection from "./ContactFormSection";
+import FooterLandingPage from "./FooterLandingPage";
 
 const LandingPage = () => {
   return (
@@ -17,6 +20,9 @@ const LandingPage = () => {
       <ReasonSection />
       <OurPeopleSection />
       <FaqsSection />
+      <MobileAppSection />
+      <ContactFormSection />
+      <FooterLandingPage />
     </div>
   );
 };
