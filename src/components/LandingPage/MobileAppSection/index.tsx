@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const MobileAppSection = () => {
   return (
-    <div className="grid xl:grid-cols-2 grid-cols-1 h-[700px] bg-gradient-to-bl from-primary/80 to-primary/10">
+    <div className="grid xl:grid-cols-2 grid-cols-1 py-12 px-12 bg-gradient-to-bl from-primary/80 to-primary/10">
       <div className="flex justify-center items-center">
         <div className="flex relative">
           <img
@@ -21,7 +21,7 @@ const MobileAppSection = () => {
           />
         </div>
       </div>
-      <div className="flex justify-center text-white flex-col">
+      <div className="flex justify-center py-28 text-white flex-col">
         <h2 className="text-4xl font-bold my-6">StayEasy Mobile App</h2>
         <p>Available on IOS & Android</p>
         <p>
