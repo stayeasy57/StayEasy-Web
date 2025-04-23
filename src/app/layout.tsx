@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Poppins } from "next/font/google";
 
+import { PrimeReactProvider } from "primereact/api";
+
+import Tailwind from "primereact/passthrough/tailwind";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,9 +38,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={poppins.className} suppressHydrationWarning>
-        {children}
-      </body>
+      <PrimeReactProvider value={{ unstyled: true, pt: Tailwind }}>
+        <body className={poppins.className} suppressHydrationWarning>
+          {children}
+        </body>
+      </PrimeReactProvider>
     </html>
   );
 }
