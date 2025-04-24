@@ -1,5 +1,6 @@
-import { Button } from "primereact/button";
 import React from "react";
+import Link from "next/link";
+import { Button } from "primereact/button";
 
 // utils
 import { Cities } from "@/utils/global";
@@ -23,10 +24,12 @@ const CitySection = () => {
               />
 
               <div className="flex justify-center pt-3 mt-2">
-                <Button
-                  label="See Hostels"
-                  className="bg-primary !font-light !rounded-4xl !py-1 "
-                />
+                <Link href="/property-listing">
+                  <Button
+                    label="See Hostels"
+                    className="bg-primary !font-light !rounded-4xl !py-1 "
+                  />
+                </Link>
               </div>
             </div>
           );
