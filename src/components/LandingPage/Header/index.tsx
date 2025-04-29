@@ -13,8 +13,13 @@ const Header = () => {
           </Link>
         </div>
         <div className="flex gap-3">
-          <CustomSecondaryButton> Login </CustomSecondaryButton>
-          <CustomSecondaryButton> Register </CustomSecondaryButton>
+          <Link href="/login">
+            <CustomSecondaryButton> Login </CustomSecondaryButton>
+          </Link>
+
+          <Link href="/signup">
+            <CustomSecondaryButton> Register </CustomSecondaryButton>
+          </Link>
         </div>
       </div>
     </div>
