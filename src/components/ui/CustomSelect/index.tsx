@@ -13,6 +13,7 @@ interface SelectProps {
   register: UseFormRegister<any>;
   options: SelectOption[];
   rules?: RegisterOptions;
+  placeholder?: string;
   error?: string;
   className?: string;
 }

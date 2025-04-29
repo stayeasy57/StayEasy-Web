@@ -1,10 +1,11 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import CustomInput from "../ui/CustomInput";
 import CustomSelect from "../ui/CustomSelect";
 import CustomButton from "../ui/CustomButton";
 import { useSignupMutation } from "@/store/api/authApi";
+import MessageBar from "../ui/MessageBar";
 
 // Define the form input types
 type SignupFormInputs = {
@@ -19,18 +20,35 @@ type SignupFormInputs = {
   userType: "TENANT" | "LANDLORD";
 };
 
+const initialValues: SignupFormInputs = {
+  fullName: "",
+  email: "",
+  phoneNumber: "",
+  address: "",
+  gender: "MALE",
+  cnic: "",
+  password: "",
+  confirmPassword: "",
+  userType: "TENANT",
+};
+
 const Signup: React.FC = () => {
   // Initialize react-hook-form
   const {
     register,
     handleSubmit,
+    reset,
     watch,
     formState: { errors },
   } = useForm<SignupFormInputs>({
-    defaultValues: {
-      userType: "TENANT",
-    },
+    defaultValues: initialValues,
   });
+
+  // local states
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
 
   // api
   const [signup, { isLoading, isError, error, data }] = useSignupMutation();
@@ -49,9 +67,19 @@ const Signup: React.FC = () => {
         userType: data.userType,
       };
       const resp = await signup(payload).unwrap();
-      console.log(resp);
-    } catch (err) {
-      console.error("Signup error:", err);
+      if (resp) {
+        reset(initialValues);
+        setMessage({
+          text: "Your account has been created successfully",
+          type: "success",
+        });
+      }
+    } catch (err: any) {
+      console.error("Signup error:", err?.data);
+      setMessage({
+        text: err?.data?.message,
+        type: "error",
+      });
     }
   };
 
@@ -62,7 +90,7 @@ const Signup: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {console.log("Error -> ", error) as any}
+        {console.log("message => ", message) as any}
         <div className="max-w-3xl mx-auto">
           {/* Form Title */}
           <div className="text-center mb-8">
@@ -206,7 +234,15 @@ const Signup: React.FC = () => {
                 />
               </div>
 
-              <CustomButton type="submit" label="Create Account" />
+              {message?.text && (
+                <MessageBar message={message?.text} type={message?.type} />
+              )}
+
+              <CustomButton
+                type="submit"
+                label="Create Account"
+                loading={isLoading}
+              />
 
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
