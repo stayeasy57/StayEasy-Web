@@ -7,6 +7,7 @@ import { PrimeReactProvider } from "primereact/api";
 import Tailwind from "primereact/passthrough/tailwind";
 
 import "./globals.css";
+import { ReduxProvider } from "@/store/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +41,7 @@ export default function RootLayout({
     <html lang="en">
       <PrimeReactProvider value={{ unstyled: true, pt: Tailwind }}>
         <body className={poppins.className} suppressHydrationWarning>
-          {children}
+          <ReduxProvider>{children}</ReduxProvider>
         </body>
       </PrimeReactProvider>
     </html>

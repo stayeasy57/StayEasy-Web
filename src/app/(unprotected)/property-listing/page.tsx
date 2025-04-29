@@ -8,7 +8,6 @@ const PropertyListingPage = () => {
   return (
     <div>
       <Header />
-      <HeroSection />
       <HostelListing />
       <FooterLandingPage />
     </div>

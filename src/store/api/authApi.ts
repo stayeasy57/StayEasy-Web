@@ -1,0 +1,56 @@
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { AuthResponse, LoginRequest, SignupRequest } from '@/utils/types/auth';
+import { RootState } from '../store';
+
+// Define our API with endpoints
+export const authApi = createApi({
+  reducerPath: 'authApi',
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: 'http://ec2-3-109-108-163.ap-south-1.compute.amazonaws.com:8000',
+    prepareHeaders: (headers, { getState }) => {
+      // Get token from state
+      const token = (getState() as RootState).auth.token;
+      
+      // If we have a token, add it to the request
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      
+      return headers;
+    },
+  }),
+  endpoints: (builder) => ({
+    login: builder.mutation<AuthResponse, LoginRequest>({
+      query: (credentials) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    signup: builder.mutation<AuthResponse, SignupRequest>({
+      query: (userData) => ({
+        url: '/users/signup',
+        method: 'POST',
+        body: userData,
+      }),
+    }),
+    logout: builder.mutation<{ success: boolean }, void>({
+      query: () => ({
+        url: '/auth/logout',
+        method: 'POST',
+      }),
+    }),
+    // For checking if the current token is valid
+    getCurrentUser: builder.query<AuthResponse, void>({
+      query: () => '/auth/me',
+    }),
+  }),
+});
+
+// Export hooks for using the API endpoints
+export const {
+  useLoginMutation,
+  useSignupMutation,
+  useLogoutMutation,
+  useGetCurrentUserQuery,
+} = authApi;
