@@ -1,34 +1,77 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+
+import { useDispatch } from "react-redux";
+
+import { loginSuccess } from "@/store/slices/authSlice";
+
+import { useRouter } from "next/navigation";
 
 import CustomInput from "../ui/CustomInput";
 
 import CustomCheckbox from "../ui/CustomCheckbox";
 import CustomButton from "../ui/CustomButton";
 
+import { useLoginMutation } from "@/store/api/authApi";
+import MessageBar from "../ui/MessageBar";
+
 // Form input types
 type LoginFormInputs = {
   email: string;
   password: string;
-  rememberMe: boolean;
 };
 
 const Login = () => {
+  // redux
+  const dispatch = useDispatch();
+
+  const router = useRouter();
+
+  // local state
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormInputs>({
     defaultValues: {
-      rememberMe: false,
+      email: "",
+      password: "",
     },
   });
 
+  // api
+  const [login, { isLoading, isError, error, data }] = useLoginMutation();
+
   // Form submission handler
-  const onSubmit = (data: any) => {
-    console.log("Login form submitted:", data);
+  const onSubmit = async (data: any) => {
+    try {
+      const payload = {
+        email: data.email,
+        password: data.password,
+      };
+
+      const response = await login(payload).unwrap();
+
+      if (response) {
+        dispatch(
+          loginSuccess({ user: response.user, token: response.access_token })
+        );
+        router.push("/");
+      }
+    } catch (err: any) {
+      console.log(err);
+      setMessage({
+        text: err?.data?.message || "Something went wrong",
+        type: "error",
+      });
+    }
   };
 
   // Create a handler that will be called on button click
@@ -102,7 +145,11 @@ const Login = () => {
                 </a>
               </div>
 
-              <CustomButton type="submit" label="Log In" />
+              {message?.text && (
+                <MessageBar message={message.text} type={message.type} />
+              )}
+
+              <CustomButton type="submit" label="Log In" loading={isLoading} />
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
                   Don't have an account?{" "}
