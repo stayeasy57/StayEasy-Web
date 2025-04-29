@@ -3,20 +3,20 @@ import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import CustomInput from "../ui/CustomInput";
 import CustomSelect from "../ui/CustomSelect";
-import CustomCheckbox from "../ui/CustomCheckbox";
-import CustomToggle from "../ui/CustomToggle";
 import CustomButton from "../ui/CustomButton";
+import { useSignupMutation } from "@/store/api/authApi";
 
 // Define the form input types
 type SignupFormInputs = {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
+  phoneNumber: string;
+  address: string;
+  gender: string;
+  cnic: string;
   password: string;
   confirmPassword: string;
-  userType: "tenant" | "landlord";
-  acceptTerms: boolean;
-  receiveNotifications: boolean;
+  userType: "TENANT" | "LANDLORD";
 };
 
 const Signup: React.FC = () => {
@@ -28,16 +28,31 @@ const Signup: React.FC = () => {
     formState: { errors },
   } = useForm<SignupFormInputs>({
     defaultValues: {
-      userType: "tenant",
-      acceptTerms: false,
-      receiveNotifications: true,
+      userType: "TENANT",
     },
   });
 
+  // api
+  const [signup, { isLoading, isError, error, data }] = useSignupMutation();
+
   // Form submission handler
-  const onSubmit: SubmitHandler<SignupFormInputs> = (data) => {
-    console.log(data);
-    // Here you would typically send the data to your backend
+  const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
+    try {
+      const payload = {
+        fullName: data.fullName,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+        gender: data.gender,
+        cnic: data.cnic,
+        password: data.password,
+        userType: data.userType,
+      };
+      const resp = await signup(payload).unwrap();
+      console.log(resp);
+    } catch (err) {
+      console.error("Signup error:", err);
+    }
   };
 
   // Access password value for validation
@@ -47,6 +62,7 @@ const Signup: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {console.log("Error -> ", error) as any}
         <div className="max-w-3xl mx-auto">
           {/* Form Title */}
           <div className="text-center mb-8">
@@ -60,23 +76,14 @@ const Signup: React.FC = () => {
           <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
             <form onSubmit={handleSubmit(onSubmit)}>
               {/* Form Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
                 <CustomInput
-                  id="firstName"
-                  label="First Name"
+                  id="fullName"
+                  label="Full Name"
                   register={register}
-                  rules={{ required: "First name is required" }}
-                  error={errors.firstName?.message}
+                  rules={{ required: "Full Name is required" }}
+                  error={errors.fullName?.message}
                   placeholder="John"
-                />
-
-                <CustomInput
-                  id="lastName"
-                  label="Last Name"
-                  register={register}
-                  rules={{ required: "Last name is required" }}
-                  error={errors.lastName?.message}
-                  placeholder="Doe"
                 />
               </div>
 
@@ -95,6 +102,62 @@ const Signup: React.FC = () => {
                   }}
                   error={errors.email?.message}
                   placeholder="john.doe@example.com"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <CustomInput
+                  id="phoneNumber"
+                  label="Phone Number"
+                  register={register}
+                  rules={{
+                    required: "Phone Number is required",
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: "Invalid phone number",
+                    },
+                  }}
+                  error={errors.phoneNumber?.message}
+                  placeholder="1234567890"
+                />
+
+                <CustomInput
+                  id="address"
+                  label="Address"
+                  register={register}
+                  rules={{ required: "Address is required" }}
+                  error={errors.address?.message}
+                  placeholder="123 Main St, City, Country"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <CustomSelect
+                  id="gender"
+                  label="Gender"
+                  register={register}
+                  options={[
+                    { value: "MALE", label: "Male" },
+                    { value: "FEMALE", label: "Female" },
+                    { value: "OTHER", label: "Other" },
+                  ]}
+                  rules={{ required: "Gender is required" }}
+                  error={errors.gender?.message}
+                />
+
+                <CustomInput
+                  id="cnic"
+                  label="CNIC"
+                  register={register}
+                  rules={{
+                    required: "CNIC is required",
+                    pattern: {
+                      value: /^[0-9]{5}-[0-9]{7}-[0-9]$/,
+                      message: "Invalid CNIC format",
+                    },
+                  }}
+                  error={errors.cnic?.message}
+                  placeholder="12345-1234567-1"
                 />
               </div>
 
@@ -136,22 +199,10 @@ const Signup: React.FC = () => {
                   label="I am a"
                   register={register}
                   options={[
-                    { value: "tenant", label: "Tenant" },
-                    { value: "landlord", label: "Landlord" },
+                    { value: "TENANT", label: "Tenant" },
+                    { value: "LANDLORD", label: "Landlord" },
                   ]}
                   error={errors.userType?.message}
-                />
-              </div>
-
-              <div className="mb-6">
-                <CustomCheckbox
-                  id="acceptTerms"
-                  register={register}
-                  rules={{
-                    required: "You must accept the terms and conditions",
-                  }}
-                  error={errors.acceptTerms?.message}
-                  label="I agree to the Terms of Service and Privacy Policy"
                 />
               </div>
 

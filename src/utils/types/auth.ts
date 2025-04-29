@@ -18,12 +18,17 @@ export interface User {
   }
   
   export interface SignupRequest {
-    name: string;
+    fullName: string;
     email: string;
+    phoneNumber: string;
+    address: string;
+    gender: string;
+    cnic: string;
+    userType: string;
     password: string;
   }
   
   export interface AuthResponse {
-    user: User;
+    user: any;
     token: string;
   }

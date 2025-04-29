@@ -6,7 +6,7 @@ import { RootState } from '../store';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: '/api',
+    baseUrl: 'http://ec2-3-109-108-163.ap-south-1.compute.amazonaws.com:8000',
     prepareHeaders: (headers, { getState }) => {
       // Get token from state
       const token = (getState() as RootState).auth.token;
@@ -29,7 +29,7 @@ export const authApi = createApi({
     }),
     signup: builder.mutation<AuthResponse, SignupRequest>({
       query: (userData) => ({
-        url: '/auth/signup',
+        url: '/users/signup',
         method: 'POST',
         body: userData,
       }),
