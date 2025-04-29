@@ -9,13 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.7.0",
     "@tailwindcss/postcss": "^4.1.4",
     "lucide-react": "^0.503.0",
     "next": "15.3.1",
     "primereact": "^10.9.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-hook-form": "^7.56.1"
+    "react-hook-form": "^7.56.1",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
