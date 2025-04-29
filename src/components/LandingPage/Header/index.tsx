@@ -1,4 +1,5 @@
 import CustomSecondaryButton from "@/components/ui/CustomSecondaryButton";
+import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 
@@ -7,7 +8,9 @@ const Header = () => {
     <div className="bg-primary text-white  p-4">
       <div className="flex justify-between items-center max-w-[1600px] mx-auto">
         <div>
-          <Image src="/navbar-logo.png" alt="logo" width={70} height={70} />
+          <Link href="/">
+            <Image src="/navbar-logo.png" alt="logo" width={70} height={70} />
+          </Link>
         </div>
         <div className="flex gap-3">
           <CustomSecondaryButton> Login </CustomSecondaryButton>

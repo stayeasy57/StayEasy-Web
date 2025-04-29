@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 
+import { Button } from "primereact/button";
+
 import Link from "next/link";
 
 // Interfaces
@@ -177,149 +179,164 @@ const HostelListing = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen pb-16 pt-16">
-      <div className="container mx-auto px-4 flex flex-col md:flex-row gap-4">
-        {/* Filters section */}
-        <div className="md:w-1/4">
-          <div className="bg-white rounded-lg shadow-md p-4 mb-4 md:mb-0">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">Filter By:</h2>
-              <button
-                className="md:hidden text-blue-600"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                {showFilters ? "Hide" : "Show"}
-              </button>
-            </div>
+    <div className="bg-gray-100">
+      <div className="px-8 pt-8">
+        <div className=" border-amber-500 border-8 max-w-[1024px] mx-auto rounded-md flex">
+          <input
+            className="bg-white text-primary w-full py-4 outline-none  px-4 text-sm font-medium"
+            placeholder="Search for Hostels, PGs, Hotels"
+            type="text"
+          />
+          <Button label="Search" className="bg-primary rounded-none px-16" />
+        </div>
+      </div>
 
-            <div className={`${showFilters ? "block" : "hidden"} md:block`}>
-              {filterData.map((category) => (
-                <div key={category.id} className="mb-6">
-                  <h3 className="font-bold mb-2">{category.title}</h3>
-                  {category.options.map((option) => (
-                    <div key={option.id} className="flex items-center mb-2">
-                      <input
-                        type="radio"
-                        id={`${category.id}-${option.id}`}
-                        name={category.id}
-                        className="mr-2 h-4 w-4"
-                        checked={selectedFilters[category.id] === option.id}
-                        onChange={() => toggleFilter(category.id, option.id)}
-                      />
-                      <label
-                        htmlFor={`${category.id}-${option.id}`}
-                        className="text-sm"
-                      >
-                        {option.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              ))}
+      <div className=" min-h-screen pb-16 pt-16">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row gap-10">
+          {/* Filters section */}
+          <div className="md:w-1/4">
+            <div className="bg-white rounded-lg shadow-md p-4 mb-4 md:mb-0">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold">Filter By:</h2>
+                <button
+                  className="md:hidden text-blue-600"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  {showFilters ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              <div className={`${showFilters ? "block" : "hidden"} md:block`}>
+                {filterData.map((category) => (
+                  <div key={category.id} className="mb-6">
+                    <h3 className="font-bold mb-2">{category.title}</h3>
+                    {category.options.map((option) => (
+                      <div key={option.id} className="flex items-center mb-2">
+                        <input
+                          type="radio"
+                          id={`${category.id}-${option.id}`}
+                          name={category.id}
+                          className="mr-2 h-4 w-4"
+                          checked={selectedFilters[category.id] === option.id}
+                          onChange={() => toggleFilter(category.id, option.id)}
+                        />
+                        <label
+                          htmlFor={`${category.id}-${option.id}`}
+                          className="text-sm"
+                        >
+                          {option.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Hostel listings */}
-        <div className="md:w-3/4">
-          {hostelsData.map((hostel: any) => (
-            <div
-              key={hostel.id}
-              className="bg-white rounded-lg shadow-md mb-4 overflow-hidden"
-            >
-              <div className="flex flex-col md:flex-row">
-                {/* Hostel image */}
-                <div className="md:w-1/3 relative">
-                  <img
-                    src={hostel.imageUrl}
-                    alt={hostel.name}
-                    className="w-full h-48 md:h-full object-cover"
-                  />
-                  <button
-                    className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"
-                    onClick={() => toggleFavorite(hostel.id)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill={
-                        favorites.includes(hostel.id) ? "currentColor" : "none"
-                      }
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+          {/* Hostel listings */}
+          <div className="md:w-3/4">
+            {hostelsData.map((hostel: any) => (
+              <div
+                key={hostel.id}
+                className="bg-white rounded-lg shadow-md mb-4 overflow-hidden"
+              >
+                <div className="flex flex-col md:flex-row">
+                  {/* Hostel image */}
+                  <div className="md:w-1/3 relative">
+                    <img
+                      src={hostel.imageUrl}
+                      alt={hostel.name}
+                      className="w-full h-48 md:h-full object-cover"
+                    />
+                    <button
+                      className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"
+                      onClick={() => toggleFavorite(hostel.id)}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </button>
-                  <div className="absolute bottom-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded">
-                    Featured
-                  </div>
-                </div>
-
-                {/* Hostel details */}
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="text-xl font-bold text-primary">
-                          {hostel.name}
-                        </h3>
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 mr-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                          {hostel.location}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <div className="bg-blue-100 text-primary font-bold px-2 py-1 rounded text-sm mb-1">
-                          {hostel.ratingText}
-                        </div>
-                        <div className="bg-primary text-white font-bold px-2 py-1 rounded text-sm">
-                          {hostel.rating}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {hostel.description}
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-3">
-                    <button className="bg-primary text-white py-2 px-4 rounded font-medium">
-                      {hostel.price} PKR
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill={
+                          favorites.includes(hostel.id)
+                            ? "currentColor"
+                            : "none"
+                        }
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                      </svg>
                     </button>
-                    <Link href="/property-details/11">
-                      <button className="bg-white text-primary underline cursor-pointer py-2 px-4 rounded font-medium">
-                        See Details
+                    <div className="absolute bottom-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded">
+                      Featured
+                    </div>
+                  </div>
+
+                  {/* Hostel details */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="text-xl font-bold text-primary">
+                            {hostel.name}
+                          </h3>
+                          <div className="flex items-center text-sm text-gray-600 mb-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            {hostel.location}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <div className="bg-blue-100 text-primary font-bold px-2 py-1 rounded text-sm mb-1">
+                            {hostel.ratingText}
+                          </div>
+                          <div className="bg-primary text-white font-bold px-2 py-1 rounded text-sm">
+                            {hostel.rating}
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-4">
+                        {hostel.description}
+                      </p>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button className="bg-primary text-white py-2 px-4 rounded font-medium">
+                        {hostel.price} PKR
                       </button>
-                    </Link>
+                      <Link href="/property-details/11">
+                        <button className="bg-white text-primary underline cursor-pointer py-2 px-4 rounded font-medium">
+                          See Details
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
