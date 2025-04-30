@@ -6,7 +6,7 @@ import { RootState } from '../store';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({ 
-    baseUrl: 'http://ec2-3-109-108-163.ap-south-1.compute.amazonaws.com:8000',
+    baseUrl: '/api/proxy',
     prepareHeaders: (headers, { getState }) => {
       // Get token from state
       const token = (getState() as RootState).auth.token;
