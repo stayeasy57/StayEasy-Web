@@ -23,7 +23,7 @@ export async function GET(req, { params }) {
    */
   async function handleRequest(req, path) {
     // Construct the target API URL from the path parameters
-    const apiUrl = `http://ec2-3-109-108-163.ap-south-1.compute.amazonaws.com:8000/${Array.isArray(path) ? path.join('/') : path}`;
+    const apiUrl = `http://ec2-13-127-140-227.ap-south-1.compute.amazonaws.com:8000/${Array.isArray(path) ? path.join('/') : path}`;
     
     try {
       // Get request method
