@@ -60,18 +60,20 @@ const Signup: React.FC = () => {
         fullName: data.fullName,
         email: data.email,
         phoneNumber: data.phoneNumber,
-        address: data.address,
-        gender: data.gender,
-        cnic: data.cnic,
         password: data.password,
         userType: data.userType,
       };
       const resp = await signup(payload).unwrap();
-      if (resp) {
+      if (resp?.statusCode === 201) {
         reset(initialValues);
         setMessage({
           text: "Your account has been created successfully",
           type: "success",
+        });
+      } else {
+        setMessage({
+          text: resp?.message || "Something went wrong",
+          type: "error",
         });
       }
     } catch (err: any) {
@@ -90,7 +92,6 @@ const Signup: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {console.log("message => ", message) as any}
         <div className="max-w-3xl mx-auto">
           {/* Form Title */}
           <div className="text-center mb-8">
@@ -115,7 +116,7 @@ const Signup: React.FC = () => {
                 />
               </div>
 
-              <div className="mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <CustomInput
                   id="email"
                   label="Email Address"
@@ -131,9 +132,6 @@ const Signup: React.FC = () => {
                   error={errors.email?.message}
                   placeholder="john.doe@example.com"
                 />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <CustomInput
                   id="phoneNumber"
                   label="Phone Number"
@@ -147,45 +145,6 @@ const Signup: React.FC = () => {
                   }}
                   error={errors.phoneNumber?.message}
                   placeholder="1234567890"
-                />
-
-                <CustomInput
-                  id="address"
-                  label="Address"
-                  register={register}
-                  rules={{ required: "Address is required" }}
-                  error={errors.address?.message}
-                  placeholder="123 Main St, City, Country"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <CustomSelect
-                  id="gender"
-                  label="Gender"
-                  register={register}
-                  options={[
-                    { value: "MALE", label: "Male" },
-                    { value: "FEMALE", label: "Female" },
-                    { value: "OTHER", label: "Other" },
-                  ]}
-                  rules={{ required: "Gender is required" }}
-                  error={errors.gender?.message}
-                />
-
-                <CustomInput
-                  id="cnic"
-                  label="CNIC"
-                  register={register}
-                  rules={{
-                    required: "CNIC is required",
-                    pattern: {
-                      value: /^[0-9]{5}-[0-9]{7}-[0-9]$/,
-                      message: "Invalid CNIC format",
-                    },
-                  }}
-                  error={errors.cnic?.message}
-                  placeholder="12345-1234567-1"
                 />
               </div>
 

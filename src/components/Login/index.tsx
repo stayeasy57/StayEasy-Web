@@ -59,16 +59,25 @@ const Login = () => {
 
       const response = await login(payload).unwrap();
 
-      if (response) {
+      if (response?.statusCode === 401) {
+        setMessage({
+          text: response?.message || "Something went wrong",
+          type: "error",
+        });
+        return;
+      } else {
         dispatch(
-          loginSuccess({ user: response.user, token: response.access_token })
+          loginSuccess({
+            user: response.data?.user,
+            token: response.data?.access_token,
+          })
         );
         router.push("/");
       }
     } catch (err: any) {
       console.log(err);
       setMessage({
-        text: err?.data?.message || "Something went wrong",
+        text: err?.message || "Something went wrong",
         type: "error",
       });
     }
