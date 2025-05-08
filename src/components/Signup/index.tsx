@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import CustomInput from "../ui/CustomInput";
 import CustomSelect from "../ui/CustomSelect";
 import CustomButton from "../ui/CustomButton";
-import { useSignupMutation } from "@/store/api/authApi";
+import { useSignupMutation } from "@/store/api/apiSlice";
 import MessageBar from "../ui/MessageBar";
 
 // Define the form input types
