@@ -14,7 +14,7 @@ import CustomInput from "../ui/CustomInput";
 import CustomCheckbox from "../ui/CustomCheckbox";
 import CustomButton from "../ui/CustomButton";
 
-import { useLoginMutation } from "@/store/api/authApi";
+import { useLoginMutation } from "@/store/api/apiSlice";
 import MessageBar from "../ui/MessageBar";
 
 // Form input types

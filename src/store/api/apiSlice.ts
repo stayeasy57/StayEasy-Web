@@ -42,6 +42,12 @@ export const authApi = createApi({
         method: "POST",
       }),
     }),
+    getProperties: builder.query<any, void>({
+      query: () => "/properties",
+    }),
+    getProperty: builder.query<any, any>({
+      query: (id) => `/properties/${id}`,
+    }),
     // For checking if the current token is valid
     getCurrentUser: builder.query<AuthResponse, void>({
       query: () => "/auth/me",
@@ -54,5 +60,7 @@ export const {
   useLoginMutation,
   useSignupMutation,
   useLogoutMutation,
+  useGetPropertiesQuery,
+  useGetPropertyQuery,
   useGetCurrentUserQuery,
 } = authApi;

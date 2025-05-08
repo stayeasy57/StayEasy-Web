@@ -1,12 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import ReviewsCarousel from "./ReviewsCarousel";
 import HostelRules from "./HostelRules";
+import { useGetPropertyQuery } from "@/store/api/apiSlice";
 
 const HostelDetail = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [propertyData, setPropertyData] = useState<any>(null);
+
+  const { id } = useParams();
+
+  // api
+  const { data: property } = useGetPropertyQuery(id ?? "");
 
   // Dummy data for the hostel
   const hostelName = "Stanza Living Hostel";
@@ -237,6 +245,12 @@ const HostelDetail = () => {
     setIsFavorite(!isFavorite);
   };
 
+  useEffect(() => {
+    if (property?.data) {
+      setPropertyData(property?.data);
+    }
+  }, []);
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 ">
       {/* Navigation Tabs */}
@@ -354,7 +368,9 @@ const HostelDetail = () => {
       </div>
 
       {/* Hostel Title */}
-      <h1 className="text-3xl font-bold text-blue-800 mb-4">{hostelName}</h1>
+      <h1 className="text-3xl font-bold text-blue-800 mb-4">
+        {propertyData?.hostelName}
+      </h1>
 
       {/* Location with actions */}
       <div className="flex flex-wrap justify-between items-center mb-6">
@@ -379,7 +395,9 @@ const HostelDetail = () => {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <span>{hostelLocation}</span>
+          <span>
+            {propertyData?.hostelAddress}, {propertyData?.hostelCity}
+          </span>
           <span className="mx-2">-</span>
           <a href="#" className="text-blue-600 font-medium">
             Excellent Location
@@ -433,7 +451,7 @@ const HostelDetail = () => {
         {/* Main Image - Large */}
         <div className="md:col-span-4 row-span-2 relative">
           <img
-            src={hostelImages[0].src}
+            src={propertyData?.roomImages[0]}
             alt={hostelImages[0].alt}
             className="w-full h-64 md:h-full object-cover rounded-lg"
           />
@@ -467,8 +485,7 @@ const HostelDetail = () => {
             </div>
           </div>
           <div className="text-sm text-gray-600 mb-2">
-            <p className="mb-2">Tenants Who Stayed Here Loved</p>
-            <p className="mb-4">{review.text}</p>
+            <p className="mb-4">{propertyData?.description}</p>
           </div>
           <div className="flex items-center">
             <img
@@ -476,7 +493,7 @@ const HostelDetail = () => {
               alt={review.author}
               className="w-8 h-8 rounded-full mr-2"
             />
-            <span className="font-medium">{review.author}</span>
+            <span className="font-medium">{propertyData?.ownerName}</span>
           </div>
           <div className="mt-4 flex justify-between items-center">
             <span className="font-bold">Staff</span>
