@@ -63,7 +63,6 @@ const HostelDetail = () => {
       name: "Lift",
       icon: (
         <svg
-          xmlns="http://www.w3.org/2000/svg"
           className="h-8 w-8"
           fill="none"
           viewBox="0 0 24 24"
@@ -249,7 +248,7 @@ const HostelDetail = () => {
     if (property?.data) {
       setPropertyData(property?.data);
     }
-  }, []);
+  }, [property?.data]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 ">
@@ -368,6 +367,7 @@ const HostelDetail = () => {
       </div>
 
       {/* Hostel Title */}
+      {console.log("propertyData", propertyData) as any}
       <h1 className="text-3xl font-bold text-blue-800 mb-4">
         {propertyData?.hostelName}
       </h1>
