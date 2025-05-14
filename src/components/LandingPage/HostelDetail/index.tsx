@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import ReviewsCarousel from "./ReviewsCarousel";
 import HostelRules from "./HostelRules";
@@ -11,10 +11,28 @@ const HostelDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [propertyData, setPropertyData] = useState<any>(null);
 
+  // Add refs for each section
+  const overviewRef = useRef<any>(null);
+  const infoRef = useRef<any>(null);
+  const facilitiesRef = useRef<any>(null);
+  const rulesRef = useRef<any>(null);
+  const reviewsRef = useRef<any>(null);
+
   const { id } = useParams();
 
   // api
   const { data: property } = useGetPropertyQuery(id ?? "");
+
+  // Add scroll function
+  const scrollToSection = (
+    ref: React.RefObject<HTMLDivElement>,
+    tabName: string
+  ) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth" });
+      setActiveTab(tabName);
+    }
+  };
 
   // Dummy images from Unsplash
   const hostelImages = [
@@ -254,7 +272,7 @@ const HostelDetail = () => {
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
           }`}
-          onClick={() => setActiveTab("overview")}
+          onClick={() => scrollToSection(overviewRef, "overview")}
         >
           Overview
         </button>
@@ -264,7 +282,7 @@ const HostelDetail = () => {
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
           }`}
-          onClick={() => setActiveTab("info")}
+          onClick={() => scrollToSection(infoRef, "info")}
         >
           Info & Prices
         </button>
@@ -274,7 +292,7 @@ const HostelDetail = () => {
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
           }`}
-          onClick={() => setActiveTab("facilities")}
+          onClick={() => scrollToSection(facilitiesRef, "facilities")}
         >
           Facilities
         </button>
@@ -284,7 +302,7 @@ const HostelDetail = () => {
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
           }`}
-          onClick={() => setActiveTab("rules")}
+          onClick={() => scrollToSection(rulesRef, "rules")}
         >
           Hostel Rules
         </button>
@@ -294,7 +312,7 @@ const HostelDetail = () => {
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
           }`}
-          onClick={() => setActiveTab("reviews")}
+          onClick={() => scrollToSection(reviewsRef, "reviews")}
         >
           Reviews
         </button>
@@ -440,197 +458,205 @@ const HostelDetail = () => {
         </div>
       </div>
 
-      {/* Image Gallery */}
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-2 mb-8">
-        {/* Main Image - Large */}
-        <div className="md:col-span-4 row-span-2 relative">
-          <img
-            src={propertyData?.roomImages[0]}
-            alt={hostelImages[0].alt}
-            className="w-full h-64 md:h-full object-cover rounded-lg"
-          />
-          <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-            Hotel
-          </div>
-        </div>
-
-        {/* Small Images - Right Top */}
-        <div className="md:col-span-3">
-          <div className="grid grid-cols-2 gap-2">
+      {/* Overview Section */}
+      <div ref={overviewRef}>
+        {/* Image Gallery */}
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-2 mb-8">
+          {/* Main Image - Large */}
+          <div className="md:col-span-4 row-span-2 relative">
             <img
-              src={hostelImages[1].src}
-              alt={hostelImages[1].alt}
-              className="w-full h-32 object-cover rounded-lg"
+              src={propertyData?.roomImages[0]}
+              alt={hostelImages[0].alt}
+              className="w-full h-64 md:h-full object-cover rounded-lg"
             />
-            <img
-              src={hostelImages[2].src}
-              alt={hostelImages[2].alt}
-              className="w-full h-32 object-cover rounded-lg"
-            />
-          </div>
-        </div>
-
-        {/* Review Card */}
-        <div className="md:col-span-3 bg-white rounded-lg p-4 shadow">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold">{superb}</h3>
-            <div className="bg-blue-600 text-white font-bold px-2 py-1 rounded text-sm">
-              {superRating}
+            <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+              Hotel
             </div>
           </div>
-          <div className="text-sm text-gray-600 mb-2">
-            <p className="mb-4">{propertyData?.description}</p>
-          </div>
-          <div className="flex items-center">
-            <img
-              src={review.avatar}
-              alt={review.author}
-              className="w-8 h-8 rounded-full mr-2"
-            />
-            <span className="font-medium">{propertyData?.ownerName}</span>
-          </div>
-          <div className="mt-4 flex justify-between items-center">
-            <span className="font-bold">Staff</span>
-            <div className="bg-white border border-gray-300 rounded px-2 py-1 font-bold text-sm">
-              {staffRating}
-            </div>
-          </div>
-        </div>
 
-        {/* Small Images - Bottom Row */}
-        <div className="md:col-span-3">
-          <div className="grid grid-cols-3 gap-2">
-            <img
-              src={hostelImages[3].src}
-              alt={hostelImages[3].alt}
-              className="w-full h-24 object-cover rounded-lg"
-            />
-            <img
-              src={hostelImages[4].src}
-              alt={hostelImages[4].alt}
-              className="w-full h-24 object-cover rounded-lg"
-            />
-            <div className="relative">
+          {/* Small Images - Right Top */}
+          <div className="md:col-span-3">
+            <div className="grid grid-cols-2 gap-2">
               <img
-                src={hostelImages[5].src}
-                alt={hostelImages[5].alt}
+                src={hostelImages[1].src}
+                alt={hostelImages[1].alt}
+                className="w-full h-32 object-cover rounded-lg"
+              />
+              <img
+                src={hostelImages[2].src}
+                alt={hostelImages[2].alt}
+                className="w-full h-32 object-cover rounded-lg"
+              />
+            </div>
+          </div>
+
+          {/* Review Card */}
+          <div className="md:col-span-3 bg-white rounded-lg p-4 shadow">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-bold">{superb}</h3>
+              <div className="bg-blue-600 text-white font-bold px-2 py-1 rounded text-sm">
+                {superRating}
+              </div>
+            </div>
+            <div className="text-sm text-gray-600 mb-2">
+              <p className="mb-4">{propertyData?.description}</p>
+            </div>
+            <div className="flex items-center">
+              <img
+                src={review.avatar}
+                alt={review.author}
+                className="w-8 h-8 rounded-full mr-2"
+              />
+              <span className="font-medium">{propertyData?.ownerName}</span>
+            </div>
+            <div className="mt-4 flex justify-between items-center">
+              <span className="font-bold">Staff</span>
+              <div className="bg-white border border-gray-300 rounded px-2 py-1 font-bold text-sm">
+                {staffRating}
+              </div>
+            </div>
+          </div>
+
+          {/* Small Images - Bottom Row */}
+          <div className="md:col-span-3">
+            <div className="grid grid-cols-3 gap-2">
+              <img
+                src={hostelImages[3].src}
+                alt={hostelImages[3].alt}
                 className="w-full h-24 object-cover rounded-lg"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                <span className="text-white font-bold">+24 More</span>
+              <img
+                src={hostelImages[4].src}
+                alt={hostelImages[4].alt}
+                className="w-full h-24 object-cover rounded-lg"
+              />
+              <div className="relative">
+                <img
+                  src={hostelImages[5].src}
+                  alt={hostelImages[5].alt}
+                  className="w-full h-24 object-cover rounded-lg"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                  <span className="text-white font-bold">+24 More</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Map */}
+          <div className="md:col-span-4 md:row-span-1">
+            <div className="bg-gray-200 rounded-lg w-full h-24 md:h-full relative">
+              <img
+                src="/api/placeholder/600/200"
+                alt="Map"
+                className="w-full h-full object-cover rounded-lg"
+              />
+              <div className="absolute bottom-2 right-2 bg-white py-1 px-2 rounded-full shadow text-xs">
+                4.6 PKR 3,519
+              </div>
+              <button className="absolute bottom-2 left-2 bg-white py-1 px-3 rounded-full shadow-md text-xs text-blue-600 flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                </svg>
+                <span>Show full map</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <span className="text-green-500 font-medium mr-2">—</span>
+            <span className="text-green-500 font-medium">Reliable Info</span>
+          </div>
+
+          <h2 className="text-lg font-bold text-gray-800 mb-3">
+            Guests say the description and photos for this property are very
+            accurate.
+          </h2>
+
+          <p className="text-sm text-gray-700 mb-4">
+            We provide accurate details about every hostel so you can book with
+            confidence.Finding the perfect place to stay has never been easier.
+            Our platform ensures that all hostel listings include verified
+            reviews, updated amenities, and real photos. No hidden
+            surprises—just the right information to help you make the best
+            choice for your stay.
+          </p>
+
+          <p className="text-sm text-gray-700 mb-8">
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat."
+          </p>
+
+          {/* Property Highlights Card */}
+          <div className="bg-blue-100 rounded-lg p-4 mb-8">
+            <h3 className="text-lg font-medium mb-4">Property Highlights</h3>
+            <p className="text-sm text-gray-700 mb-4">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim ven.
+            </p>
+
+            <div className="flex items-start mb-2">
+              <div className="flex-shrink-0 mt-1">
+                <svg
+                  className="h-5 w-5 text-blue-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-2">
+                <h4 className="text-base font-medium">Loyal Customers</h4>
+                <p className="text-sm text-gray-700">
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam.
+                </p>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Map */}
-        <div className="md:col-span-4 md:row-span-1">
-          <div className="bg-gray-200 rounded-lg w-full h-24 md:h-full relative">
-            <img
-              src="/api/placeholder/600/200"
-              alt="Map"
-              className="w-full h-full object-cover rounded-lg"
-            />
-            <div className="absolute bottom-2 right-2 bg-white py-1 px-2 rounded-full shadow text-xs">
-              4.6 PKR 3,519
+      {/* Facilities Section */}
+      <div ref={facilitiesRef} className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Facilities</h2>
+        {/* Amenities */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {amenities.map((amenity) => (
+            <div
+              key={amenity.id}
+              className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+            >
+              {amenity.icon}
+              <span className="mt-2 text-sm text-center">{amenity.name}</span>
             </div>
-            <button className="absolute bottom-2 left-2 bg-white py-1 px-3 rounded-full shadow-md text-xs text-blue-600 flex items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-              </svg>
-              <span>Show full map</span>
-            </button>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Amenities */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        {amenities.map((amenity) => (
-          <div
-            key={amenity.id}
-            className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
-          >
-            {amenity.icon}
-            <span className="mt-2 text-sm text-center">{amenity.name}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-8">
-        <div className="flex items-center mb-4">
-          <span className="text-green-500 font-medium mr-2">—</span>
-          <span className="text-green-500 font-medium">Reliable Info</span>
-        </div>
-
-        <h2 className="text-lg font-bold text-gray-800 mb-3">
-          Guests say the description and photos for this property are very
-          accurate.
-        </h2>
-
-        <p className="text-sm text-gray-700 mb-4">
-          We provide accurate details about every hostel so you can book with
-          confidence.Finding the perfect place to stay has never been easier.
-          Our platform ensures that all hostel listings include verified
-          reviews, updated amenities, and real photos. No hidden surprises—just
-          the right information to help you make the best choice for your stay.
-        </p>
-
-        <p className="text-sm text-gray-700 mb-8">
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat."
-        </p>
-
-        {/* Property Highlights Card */}
-        <div className="bg-blue-100 rounded-lg p-4 mb-8">
-          <h3 className="text-lg font-medium mb-4">Property Highlights</h3>
-          <p className="text-sm text-gray-700 mb-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim ven.
-          </p>
-
-          <div className="flex items-start mb-2">
-            <div className="flex-shrink-0 mt-1">
-              <svg
-                className="h-5 w-5 text-blue-500"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-2">
-              <h4 className="text-base font-medium">Loyal Customers</h4>
-              <p className="text-sm text-gray-700">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Availability Section */}
-      <div className="mb-12">
+      {/* Info & Prices Section */}
+      <div ref={infoRef} className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Availability</h2>
 
         <div className="flex items-center text-red-500 mb-4">
@@ -778,12 +804,18 @@ const HostelDetail = () => {
             </tbody>
           </table>
         </div>
-        <div className="my-12">
-          <ReviewsCarousel />
-        </div>
-        <div>
-          <HostelRules />
-        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div ref={reviewsRef} className="my-12">
+        <h2 className="text-2xl font-bold mb-4">Reviews</h2>
+        <ReviewsCarousel />
+      </div>
+
+      {/* Hostel Rules Section */}
+      <div ref={rulesRef} className="mb-12">
+        <h2 className="text-2xl font-bold mb-4">Hostel Rules</h2>
+        <HostelRules />
       </div>
     </div>
   );
