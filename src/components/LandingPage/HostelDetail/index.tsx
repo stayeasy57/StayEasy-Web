@@ -16,12 +16,6 @@ const HostelDetail = () => {
   // api
   const { data: property } = useGetPropertyQuery(id ?? "");
 
-  // Dummy data for the hostel
-  const hostelName = "Stanza Living Hostel";
-  const hostelLocation = "G-Block Islamabad, 123 Street, House 4";
-  const hostelRating = 4.8;
-  const reviewCount = 148;
-
   // Dummy images from Unsplash
   const hostelImages = [
     {
@@ -255,7 +249,7 @@ const HostelDetail = () => {
       {/* Navigation Tabs */}
       <div className="flex overflow-x-auto mb-4 border-b border-gray-200">
         <button
-          className={`px-4 py-2 font-medium text-sm ${
+          className={`px-4 flex-1 py-2 font-medium text-sm ${
             activeTab === "overview"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
@@ -265,7 +259,7 @@ const HostelDetail = () => {
           Overview
         </button>
         <button
-          className={`px-4 py-2 font-medium text-sm ${
+          className={`px-4 flex-1 py-2 font-medium text-sm ${
             activeTab === "info"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
@@ -275,7 +269,7 @@ const HostelDetail = () => {
           Info & Prices
         </button>
         <button
-          className={`px-4 py-2 font-medium text-sm ${
+          className={`px-4 flex-1 py-2 font-medium text-sm ${
             activeTab === "facilities"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
@@ -285,7 +279,7 @@ const HostelDetail = () => {
           Facilities
         </button>
         <button
-          className={`px-4 py-2 font-medium text-sm ${
+          className={`px-4 flex-1 py-2 font-medium text-sm ${
             activeTab === "rules"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
@@ -295,7 +289,7 @@ const HostelDetail = () => {
           Hostel Rules
         </button>
         <button
-          className={`px-4 py-2 font-medium text-sm ${
+          className={`px-4 py-2 flex-1 font-medium text-sm ${
             activeTab === "reviews"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600"
@@ -763,78 +757,24 @@ const HostelDetail = () => {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-gray-200">
-                <td className="py-3 px-4 text-gray-800">Single Sharing</td>
-                <td className="py-3 px-4 text-center text-green-600 font-medium">
-                  3
-                </td>
-                <td className="py-3 px-4 text-center">3000+9000=12000</td>
-                <td className="py-3 px-4 text-center">
-                  <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
-                    Reserve
-                  </button>
-                </td>
-              </tr>
-              <tr className="border-b border-gray-200">
-                <td className="py-3 px-4 text-gray-800">Double Sharing</td>
-                <td className="py-3 px-4 text-center text-green-600 font-medium">
-                  4
-                </td>
-                <td className="py-3 px-4 text-center">3000+7000=10000</td>
-                <td className="py-3 px-4 text-center">
-                  <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
-                    Reserve
-                  </button>
-                </td>
-              </tr>
-              <tr className="border-b border-gray-200">
-                <td className="py-3 px-4 text-gray-800">Triple Sharing</td>
-                <td className="py-3 px-4 text-center text-green-600 font-medium">
-                  6
-                </td>
-                <td className="py-3 px-4 text-center">3000+6000=9000</td>
-                <td className="py-3 px-4 text-center">
-                  <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
-                    Reserve
-                  </button>
-                </td>
-              </tr>
-              <tr className="border-b border-gray-200">
-                <td className="py-3 px-4 text-gray-800">Quadruple Sharing</td>
-                <td className="py-3 px-4 text-center text-green-600 font-medium">
-                  2
-                </td>
-                <td className="py-3 px-4 text-center">3000+5000=8000</td>
-                <td className="py-3 px-4 text-center">
-                  <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
-                    Reserve
-                  </button>
-                </td>
-              </tr>
-              <tr className="border-b border-gray-200">
-                <td className="py-3 px-4 text-gray-800">Quintuple Sharing</td>
-                <td className="py-3 px-4 text-center text-green-600 font-medium">
-                  1
-                </td>
-                <td className="py-3 px-4 text-center">3000+4000=7000</td>
-                <td className="py-3 px-4 text-center">
-                  <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
-                    Reserve
-                  </button>
-                </td>
-              </tr>
-              <tr className="border-b border-gray-200">
-                <td className="py-3 px-4 text-gray-800">Sextuplet Sharing</td>
-                <td className="py-3 px-4 text-center text-green-600 font-medium">
-                  5
-                </td>
-                <td className="py-3 px-4 text-center">3000+3000=6000</td>
-                <td className="py-3 px-4 text-center">
-                  <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
-                    Reserve
-                  </button>
-                </td>
-              </tr>
+              {propertyData?.roomTypes.map((roomType: any) => (
+                <tr key={roomType.id} className="border-b border-gray-200">
+                  <td className="py-3 px-4 text-gray-800">
+                    {roomType.occupancyType}
+                  </td>
+                  <td className="py-3 px-4 text-center text-green-600 font-medium">
+                    {roomType.totalBeds}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    {roomType.securityDeposit} + {roomType.rentAmount} PKR
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
+                      Reserve
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

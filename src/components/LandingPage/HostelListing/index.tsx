@@ -245,7 +245,15 @@ const HostelListing = () => {
                             <p className="text-sm text-gray-600 mb-4">
                               {hostel.description}
                             </p>
-                            <div className="mt-6">
+                            <div className="mt-2">
+                              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                                Available Beds
+                              </h3>
+                              <div className="flex flex-wrap gap-3">
+                                {hostel.availableBeds}
+                              </div>
+                            </div>
+                            <div className="mt-2">
                               <h3 className="text-lg font-semibold text-gray-800 mb-3">
                                 Room Types
                               </h3>

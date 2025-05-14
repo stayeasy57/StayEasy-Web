@@ -8,6 +8,7 @@ import {
   Linkedin,
   Youtube,
   Home,
+  Facebook,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -140,13 +141,21 @@ const FooterLandingPage = () => {
             <div>
               <h3 className="font-bold mb-2">Follow Me</h3>
               <div className="flex space-x-3">
-                <a href="#" className="bg-white rounded-full p-2">
-                  <Twitter className="text-blue-800 w-5 h-5" />
+                <a
+                  href="https://www.facebook.com/share/15ouXRAyrd/"
+                  target="_blank"
+                  className="bg-white rounded-full p-2"
+                >
+                  <Facebook className="text-blue-800 w-5 h-5" />
                 </a>
                 <a href="#" className="bg-white rounded-full p-2">
                   <Instagram className="text-blue-800 w-5 h-5" />
                 </a>
-                <a href="#" className="bg-white rounded-full p-2">
+                <a
+                  href="https://www.linkedin.com/company/ea-stayeasy"
+                  className="bg-white rounded-full p-2"
+                  target="_blank"
+                >
                   <Linkedin className="text-blue-800 w-5 h-5" />
                 </a>
                 <a href="#" className="bg-white rounded-full p-2">
