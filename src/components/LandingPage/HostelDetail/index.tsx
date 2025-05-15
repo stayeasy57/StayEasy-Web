@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import ReviewsCarousel from "./ReviewsCarousel";
 import HostelRules from "./HostelRules";
 import { useGetPropertyQuery } from "@/store/api/apiSlice";
+import { facilitiesIconList } from "@/utils/global/facilitiesIconList";
 
 const HostelDetail = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -642,16 +643,71 @@ const HostelDetail = () => {
       <div ref={facilitiesRef} className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Facilities</h2>
         {/* Amenities */}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {amenities.map((amenity) => (
+          {propertyData?.mealProvided?.map((meal: string, index: number) => (
             <div
-              key={amenity.id}
+              key={index}
               className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
             >
-              {amenity.icon}
-              <span className="mt-2 text-sm text-center">{amenity.name}</span>
+              {facilitiesIconList[meal as keyof typeof facilitiesIconList]}
+              <span className="mt-2 text-sm text-center">{meal}</span>
             </div>
           ))}
+          {propertyData?.otherFacilities?.map(
+            (facility: string, index: number) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+              >
+                {
+                  facilitiesIconList[
+                    facility as keyof typeof facilitiesIconList
+                  ]
+                }
+                <span className="mt-2 text-sm text-center">{facility}</span>
+              </div>
+            )
+          )}
+          {propertyData?.foodType?.map((facility: string, index: number) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+            >
+              {facilitiesIconList[facility as keyof typeof facilitiesIconList]}
+              <span className="mt-2 text-sm text-center">{facility}</span>
+            </div>
+          ))}
+          {propertyData?.basicFacilities?.map(
+            (facility: string, index: number) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+              >
+                {
+                  facilitiesIconList[
+                    facility as keyof typeof facilitiesIconList
+                  ]
+                }
+                <span className="mt-2 text-sm text-center">{facility}</span>
+              </div>
+            )
+          )}
+          {propertyData?.roomFacilities?.map(
+            (facility: string, index: number) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+              >
+                {
+                  facilitiesIconList[
+                    facility as keyof typeof facilitiesIconList
+                  ]
+                }
+                <span className="mt-2 text-sm text-center">{facility}</span>
+              </div>
+            )
+          )}
         </div>
       </div>
 
