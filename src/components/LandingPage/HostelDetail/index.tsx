@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import ReviewsCarousel from "./ReviewsCarousel";
 import HostelRules from "./HostelRules";
 import { useGetPropertyQuery } from "@/store/api/apiSlice";
+import { facilitiesIconList } from "@/utils/global/facilitiesIconList";
 
 const HostelDetail = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -642,134 +643,77 @@ const HostelDetail = () => {
       <div ref={facilitiesRef} className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Facilities</h2>
         {/* Amenities */}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {amenities.map((amenity) => (
+          {propertyData?.mealProvided?.map((meal: string, index: number) => (
             <div
-              key={amenity.id}
+              key={index}
               className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
             >
-              {amenity.icon}
-              <span className="mt-2 text-sm text-center">{amenity.name}</span>
+              {facilitiesIconList[meal as keyof typeof facilitiesIconList]}
+              <span className="mt-2 text-sm text-center">{meal}</span>
             </div>
           ))}
+          {propertyData?.otherFacilities?.map(
+            (facility: string, index: number) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+              >
+                {
+                  facilitiesIconList[
+                    facility as keyof typeof facilitiesIconList
+                  ]
+                }
+                <span className="mt-2 text-sm text-center">{facility}</span>
+              </div>
+            )
+          )}
+          {propertyData?.foodType?.map((facility: string, index: number) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+            >
+              {facilitiesIconList[facility as keyof typeof facilitiesIconList]}
+              <span className="mt-2 text-sm text-center">{facility}</span>
+            </div>
+          ))}
+          {propertyData?.basicFacilities?.map(
+            (facility: string, index: number) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+              >
+                {
+                  facilitiesIconList[
+                    facility as keyof typeof facilitiesIconList
+                  ]
+                }
+                <span className="mt-2 text-sm text-center">{facility}</span>
+              </div>
+            )
+          )}
+          {propertyData?.roomFacilities?.map(
+            (facility: string, index: number) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow"
+              >
+                {
+                  facilitiesIconList[
+                    facility as keyof typeof facilitiesIconList
+                  ]
+                }
+                <span className="mt-2 text-sm text-center">{facility}</span>
+              </div>
+            )
+          )}
         </div>
       </div>
 
       {/* Info & Prices Section */}
       <div ref={infoRef} className="mb-12">
         <h2 className="text-2xl font-bold mb-4">Availability</h2>
-
-        <div className="flex items-center text-red-500 mb-4">
-          <svg
-            className="h-6 w-6 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <p className="text-sm">
-            Select date to see this property's availability and price
-          </p>
-        </div>
-
-        {/* Search Form */}
-        <div className="flex flex-col md:flex-row gap-2 mb-6">
-          <div className="border-2 border-yellow-500 rounded-md flex items-center p-2 flex-1">
-            <svg
-              className="h-6 w-6 text-gray-600 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-            <input
-              type="text"
-              placeholder="Islamabad"
-              className="flex-1 outline-none"
-              //   value="Islamabad"
-            />
-            <button className="text-gray-600">
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div className="border-2 border-gray-300 rounded-md flex items-center p-2 flex-1">
-            <svg
-              className="h-6 w-6 text-gray-600 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span className="text-sm text-gray-600">Check-in— Check-out</span>
-          </div>
-
-          <div className="border-2 border-gray-300 rounded-md flex items-center p-2 flex-1">
-            <svg
-              className="h-6 w-6 text-gray-600 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span className="text-sm text-gray-600 flex-1">
-              2 Seater, 1 room
-            </span>
-            <svg
-              className="h-5 w-5 text-gray-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
-
-          <button className="bg-blue-600 text-white py-2 px-6 rounded-md font-medium">
-            Search
-          </button>
-        </div>
 
         {/* Availability Table */}
         <div className="overflow-x-auto">
