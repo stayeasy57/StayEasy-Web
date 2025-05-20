@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import ReviewsCarousel from "./ReviewsCarousel";
 import HostelRules from "./HostelRules";
 import { useGetPropertyQuery } from "@/store/api/apiSlice";
 import { facilitiesIconList } from "@/utils/global/facilitiesIconList";
 
 const HostelDetail = () => {
+  const router = useRouter();
+
   const [activeTab, setActiveTab] = useState("overview");
   const [isFavorite, setIsFavorite] = useState(false);
   const [propertyData, setPropertyData] = useState<any>(null);
@@ -69,177 +72,6 @@ const HostelDetail = () => {
     },
   ];
 
-  // Dummy amenities
-  const amenities = [
-    {
-      id: "1",
-      name: "Lift",
-      icon: (
-        <svg
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 10h14v8H5v-8zM5 6h14"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "2",
-      name: "WiFi",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.246-3.905 14.15 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "3",
-      name: "Breakfast",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 3h18v18H3V3z"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 9h18M9 21V9"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "4",
-      name: "Gym",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16m-7 6h7"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "5",
-      name: "TV",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "6",
-      name: "24/7 Light",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-          />
-        </svg>
-      ),
-    },
-    {
-      id: "7",
-      name: "Laundry",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 3h18v18H3V3z"
-          />
-          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
-          <circle cx="7" cy="7" r="1" fill="currentColor" />
-        </svg>
-      ),
-    },
-    {
-      id: "8",
-      name: "Parking space",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-8 w-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 10l7-7m0 0l7 7m-7-7v18"
-          />
-        </svg>
-      ),
-    },
-  ];
-
   // Dummy review data
   const review = {
     id: "1",
@@ -255,6 +87,18 @@ const HostelDetail = () => {
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
+  };
+
+  const handleReserve = (roomType: any) => {
+    router.push(
+      `/property-details/${id}/property-reserve/?propertyName=${
+        propertyData?.hostelName
+      }&roomType=${roomType.occupancyType}&securityDeposit=${
+        roomType.securityDeposit
+      }&rentAmount=${roomType.rentAmount}&total=${
+        roomType.rentAmount + roomType.securityDeposit
+      }`
+    );
   };
 
   useEffect(() => {
@@ -739,7 +583,10 @@ const HostelDetail = () => {
                     {roomType.securityDeposit} + {roomType.rentAmount} PKR
                   </td>
                   <td className="py-3 px-4 text-center">
-                    <button className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium">
+                    <button
+                      className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium"
+                      onClick={() => handleReserve(roomType)}
+                    >
                       Reserve
                     </button>
                   </td>
