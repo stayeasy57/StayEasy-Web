@@ -2,7 +2,11 @@
 
 import React, { useState } from "react";
 
+import { useSearchParams } from "next/navigation";
+
 const ReservationSection = () => {
+  const searchParams = useSearchParams();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -10,6 +14,8 @@ const ReservationSection = () => {
     receiveNotifications: false,
     nameOnCard: "",
     cardNumber: "",
+    checkInDate: new Date(),
+    checkOutDate: new Date(),
     expiryMonth: "",
     expiryYear: "",
     cvv: "",
@@ -31,6 +37,7 @@ const ReservationSection = () => {
 
   return (
     <div className="bg-gray-100 min-h-screen p-4">
+      {console.log("searchParams", searchParams?.get("propertyName")) as any}
       <div className="max-w-6xl grid grid-cols-1 xl:grid-cols-12 flex-col  mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="p-6 col-span-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">
@@ -150,20 +157,13 @@ const ReservationSection = () => {
 
           <div className="mb-8">
             <div className="flex items-center">
-              <input
-                id="notifications"
-                name="receiveNotifications"
-                type="checkbox"
-                checked={formData.receiveNotifications}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="notifications"
-                className="ml-2 block text-sm text-gray-700"
+              <button
+                type="submit"
+                className="bg-primary hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md"
+                onClick={handleSubmit}
               >
-                Receive important Notification
-              </label>
+                Book Now
+              </button>
             </div>
           </div>
 
@@ -323,7 +323,7 @@ const ReservationSection = () => {
             <div className="md:w-2/3 mb-6 md:mb-0">
               <button
                 type="submit"
-                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md"
+                className="bg-primary hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-md"
                 onClick={handleSubmit}
               >
                 Pay Now
@@ -341,12 +341,16 @@ const ReservationSection = () => {
               />
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-1">
-              Stanza Living Hostel
+              {searchParams?.get("propertyName")}
             </h3>
+
             <p className="text-red-500 mb-1">Non refundable</p>
-            <p className="text-gray-600 mb-1">Check in: Sunday, Feb 3, 2025</p>
+            <p className="text-gray-600 mb-1">
+              Check in: {new Date(formData.checkInDate as any).toDateString()}
+            </p>
             <p className="text-gray-600 mb-6">
-              Check out: Tuesday, March 3, 2025
+              Check out:
+              {new Date(formData.checkOutDate as any).toDateString()}
             </p>
 
             <h4 className="text-lg font-semibold text-blue-600 mb-4">
@@ -356,16 +360,22 @@ const ReservationSection = () => {
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-600">Security</span>
-                <span className="font-medium">Rs3000</span>
+                <span className="font-medium">
+                  {searchParams.get("securityDeposit")} PKR
+                </span>
               </div>
               <div className="flex justify-between mb-4">
                 <span className="text-gray-600">Rent/Month</span>
-                <span className="font-medium">Rs6000</span>
+                <span className="font-medium">
+                  {searchParams.get("rentAmount")} PKR
+                </span>
               </div>
 
               <div className="border-t border-gray-200 pt-4 flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="font-semibold">Rs9000</span>
+                <span className="font-semibold">
+                  {searchParams.get("total")} PKR
+                </span>
               </div>
             </div>
           </div>
