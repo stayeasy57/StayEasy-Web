@@ -24,7 +24,7 @@ const Header = () => {
       <div className="flex justify-between items-center max-w-[1600px] mx-auto">
         <div>
           <Link href="/">
-            <Image src="/navbar-logo.png" alt="logo" width={70} height={70} />
+            <img src="/navbar-logo.png" alt="logo" width="70" height="70" />
           </Link>
         </div>
 
