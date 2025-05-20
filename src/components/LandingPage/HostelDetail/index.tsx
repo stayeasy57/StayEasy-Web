@@ -584,7 +584,7 @@ const HostelDetail = () => {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <button
-                      className="bg-blue-600 text-white py-1 px-4 rounded-md font-medium"
+                      className="bg-blue-600 text-white cursor-pointer py-1 px-4 rounded-md font-medium"
                       onClick={() => handleReserve(roomType)}
                     >
                       Reserve
