@@ -61,7 +61,9 @@ const ReservationSection = () => {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold">Doule Sharing</h2>
+              <h2 className="text-xl font-semibold">
+                {searchParams?.get("roomType")} Sharing
+              </h2>
             </div>
           </div>
 
