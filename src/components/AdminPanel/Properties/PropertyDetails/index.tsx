@@ -1,7 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
-import { useGetPropertyByAdminQuery } from "@/store/api/apiSlice";
+import {
+  useGetPropertyByAdminQuery,
+  usePublishPropertyMutation,
+} from "@/store/api/apiSlice";
 import {
   Building2,
   MapPin,
@@ -108,6 +111,10 @@ const PropertyDetails: React.FC = () => {
     skip: !propertyId, // Skip query if no ID is provided
   });
 
+  // Publish property mutation
+  const [publishProperty, { isLoading: isPublishing }] =
+    usePublishPropertyMutation();
+
   const property = propertyResponse?.data;
 
   const [expandedSections, setExpandedSections] = useState({
@@ -190,17 +197,53 @@ const PropertyDetails: React.FC = () => {
 
   // Handle action button clicks
   const handleAction = (action: "approve" | "reject") => {
+    // Check if property is completed for approval
+    if (action === "approve" && !property?.isCompleted) {
+      return; // Don't open modal if property is not completed
+    }
+
     setSelectedAction(action);
     setActionModalOpen(true);
   };
 
-  // Handle action confirmation
-  const confirmAction = () => {
-    console.log(`${selectedAction} property with reason:`, actionReason);
-    setActionModalOpen(false);
-    setSelectedAction(null);
-    setActionReason("");
-    // Here you would make the API call to approve/reject
+  // Handle action confirmation with API call
+  const confirmAction = async () => {
+    if (!property || !selectedAction) return;
+
+    try {
+      let isPublished: boolean;
+
+      if (selectedAction === "approve") {
+        isPublished = true;
+      } else {
+        isPublished = false;
+      }
+
+      await publishProperty({
+        id: propertyId,
+        isPublished: isPublished,
+      }).unwrap();
+
+      // Success handling
+      console.log(`Property ${selectedAction}d successfully!`);
+
+      // Close modal and reset state
+      setActionModalOpen(false);
+      setSelectedAction(null);
+      setActionReason("");
+
+      // Show success message (you can replace with toast notification)
+      alert(
+        `Property ${
+          selectedAction === "approve" ? "published" : "unpublished"
+        } successfully!`
+      );
+    } catch (error) {
+      console.error(`Failed to ${selectedAction} property:`, error);
+
+      // Show error message (you can replace with toast notification)
+      alert(`Failed to ${selectedAction} property. Please try again.`);
+    }
   };
 
   // Get facility icon
@@ -376,7 +419,7 @@ const PropertyDetails: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-gray-900">
-                      {property.totalBeds || "N/A"}
+                      {property.totalBeds}
                     </div>
                     <div className="text-sm text-gray-600">Total Beds</div>
                   </div>
@@ -754,7 +797,8 @@ const PropertyDetails: React.FC = () => {
                     <div className="flex items-center">
                       <AlertTriangle className="w-4 h-4 text-yellow-600 mr-2" />
                       <p className="text-sm text-yellow-800">
-                        Property setup is incomplete
+                        Property setup is incomplete. Complete all steps to
+                        enable publishing.
                       </p>
                     </div>
                   </div>
@@ -763,26 +807,56 @@ const PropertyDetails: React.FC = () => {
                 <div className="space-y-3">
                   <button
                     onClick={() => handleAction("approve")}
-                    disabled={!property.isCompleted}
-                    className={`w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors ${
-                      property.isCompleted
-                        ? "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                        : "bg-gray-300 cursor-not-allowed"
+                    disabled={!property.isCompleted || isPublishing}
+                    className={`w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium transition-colors ${
+                      property.isCompleted && !isPublishing
+                        ? "text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        : "text-gray-400 bg-gray-300 cursor-not-allowed"
                     }`}
                   >
-                    <Check className="w-4 h-4 mr-2" />
-                    Approve & Publish
+                    {isPublishing && selectedAction === "approve" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Approve & Publish
+                      </>
+                    )}
                   </button>
 
                   <button
                     onClick={() => handleAction("reject")}
-                    className="w-full flex items-center justify-center px-4 py-3 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                    disabled={isPublishing}
+                    className={`w-full flex items-center justify-center px-4 py-3 border border-red-300 rounded-md shadow-sm text-sm font-medium transition-colors ${
+                      !isPublishing
+                        ? "text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        : "text-gray-400 bg-gray-100 cursor-not-allowed"
+                    }`}
                   >
-                    <X className="w-4 h-4 mr-2" />
-                    Reject Property
+                    {isPublishing && selectedAction === "reject" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Rejecting...
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-4 h-4 mr-2" />
+                        Reject Property
+                      </>
+                    )}
                   </button>
 
-                  <button className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                  <button
+                    disabled={isPublishing}
+                    className={`w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition-colors ${
+                      !isPublishing
+                        ? "text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        : "text-gray-400 bg-gray-100 cursor-not-allowed"
+                    }`}
+                  >
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Request Changes
                   </button>
@@ -793,51 +867,128 @@ const PropertyDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Action Modal */}
+      {/* Action Confirmation Modal */}
       {actionModalOpen && (
         <div className="fixed inset-0 backdrop-brightness-50 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {selectedAction === "approve"
-                ? "Approve Property"
-                : "Reject Property"}
-            </h3>
+            <div className="flex items-center mb-4">
+              <div
+                className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${
+                  selectedAction === "approve" ? "bg-green-100" : "bg-red-100"
+                }`}
+              >
+                {selectedAction === "approve" ? (
+                  <Check className={`w-6 h-6 text-green-600`} />
+                ) : (
+                  <X className={`w-6 h-6 text-red-600`} />
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {selectedAction === "approve"
+                    ? "Approve & Publish Property"
+                    : "Reject Property"}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {selectedAction === "approve"
+                    ? "This will make the property visible to users"
+                    : "This will hide the property from users"}
+                </p>
+              </div>
+            </div>
 
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {selectedAction === "approve"
                   ? "Approval Notes (Optional)"
-                  : "Rejection Reason"}
+                  : "Rejection Reason (Required)"}
               </label>
               <textarea
                 value={actionReason}
                 onChange={(e) => setActionReason(e.target.value)}
                 placeholder={
                   selectedAction === "approve"
-                    ? "Add any notes..."
+                    ? "Add any notes for the landlord..."
                     : "Please specify the reason for rejection..."
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                 rows={4}
+                required={selectedAction === "reject"}
               />
+              {selectedAction === "reject" && !actionReason.trim() && (
+                <p className="mt-1 text-sm text-red-600">
+                  Please provide a reason for rejection
+                </p>
+              )}
+            </div>
+
+            {/* Property Summary */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                Property Summary
+              </h4>
+              <div className="space-y-1 text-sm text-gray-600">
+                <div>
+                  <span className="font-medium">Name:</span>{" "}
+                  {property?.hostelName}
+                </div>
+                <div>
+                  <span className="font-medium">Location:</span>{" "}
+                  {property?.hostelCity}
+                </div>
+                <div>
+                  <span className="font-medium">Type:</span>{" "}
+                  {property?.accommodationType}
+                </div>
+                <div>
+                  <span className="font-medium">Status:</span>{" "}
+                  {property?.isCompleted ? (
+                    <span className="text-green-600">Complete</span>
+                  ) : (
+                    <span className="text-yellow-600">Incomplete</span>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex space-x-3">
               <button
-                onClick={() => setActionModalOpen(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                onClick={() => {
+                  setActionModalOpen(false);
+                  setActionReason("");
+                  setSelectedAction(null);
+                }}
+                disabled={isPublishing}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAction}
-                className={`flex-1 px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${
+                disabled={
+                  isPublishing ||
+                  (selectedAction === "reject" && !actionReason.trim())
+                }
+                className={`flex-1 px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   selectedAction === "approve"
                     ? "bg-green-600 hover:bg-green-700 focus:ring-green-500"
                     : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
                 }`}
               >
-                {selectedAction === "approve" ? "Approve" : "Reject"}
+                {isPublishing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin inline" />
+                    {selectedAction === "approve"
+                      ? "Publishing..."
+                      : "Rejecting..."}
+                  </>
+                ) : (
+                  <>
+                    {selectedAction === "approve"
+                      ? "Confirm & Publish"
+                      : "Confirm Rejection"}
+                  </>
+                )}
               </button>
             </div>
           </div>

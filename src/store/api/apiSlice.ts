@@ -124,6 +124,19 @@ interface PropertiesQueryParams {
   isDraft?: boolean;
 }
 
+// Interface for publish property request
+interface PublishPropertyRequest {
+  id: string | number;
+  isPublished: boolean;
+}
+
+// Interface for publish property response
+interface PublishPropertyResponse {
+  statusCode: number;
+  message: string;
+  data?: any;
+}
+
 // Define our API with endpoints
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -255,6 +268,23 @@ export const authApi = createApi({
       ],
     }),
 
+    // Publish/Unpublish Property API endpoint for Admin
+    publishProperty: builder.mutation<
+      PublishPropertyResponse,
+      PublishPropertyRequest
+    >({
+      query: ({ id, isPublished }) => ({
+        url: `/admin/properties/${id}/publish`,
+        method: "PATCH",
+        body: { isPublished },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Property", id },
+        { type: "Property", id: "LIST" },
+        "Properties",
+      ],
+    }),
+
     // For checking if the current token is valid
     getCurrentUser: builder.query<AuthResponse, void>({
       query: () => "/auth/me",
@@ -273,6 +303,7 @@ export const {
   useGetUsersQuery,
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
+  usePublishPropertyMutation,
 
   useGetPropertyQuery,
   useGetCurrentUserQuery,
