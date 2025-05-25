@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useGetPropertiesForAdminQuery } from "@/store/api/apiSlice";
+import { useRouter } from "next/navigation";
 import {
   Building2,
   MapPin,
@@ -82,6 +83,8 @@ interface Property {
 }
 
 const Properties: React.FC = () => {
+  const router = useRouter();
+
   // State for pagination and filtering
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -531,7 +534,7 @@ const Properties: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
-        <div >
+        <div>
           <LoadingTable />
         </div>
       </div>
@@ -723,6 +726,9 @@ const Properties: React.FC = () => {
                       <tr
                         key={property.id}
                         className="hover:bg-gray-50 transition-colors"
+                        onClick={() =>
+                          router.push(`/admin/properties/${property.id}`)
+                        }
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-start space-x-3">

@@ -105,6 +105,12 @@ interface PropertiesResponse {
   };
 }
 
+interface PropertyResponse {
+  statusCode: number;
+  message: string;
+  data: Property;
+}
+
 interface PropertiesQueryParams {
   page?: number;
   limit?: number;
@@ -134,7 +140,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users", "Properties"], // Add tag types for caching
+  tagTypes: ["Users", "Properties", "Property"], // Add tag types for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -237,6 +243,15 @@ export const authApi = createApi({
       providesTags: ["Properties"],
     }),
 
+    // Single Property API endpoint for Admin
+    getPropertyByAdmin: builder.query<PropertyResponse, string | number>({
+      query: (id) => `/admin/properties/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Property", id },
+        { type: "Property", id: "LIST" },
+      ],
+    }),
+
     // For checking if the current token is valid
     getCurrentUser: builder.query<AuthResponse, void>({
       query: () => "/auth/me",
@@ -254,6 +269,7 @@ export const {
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
   useGetPropertiesForAdminQuery,
+  useGetPropertyByAdminQuery,
 
   useGetPropertyQuery,
   useGetCurrentUserQuery,
