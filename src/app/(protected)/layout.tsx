@@ -154,24 +154,73 @@ const ErrorDisplay = ({
   </div>
 );
 
-interface ProtectedLayoutProps {
-  children: React.ReactNode;
-  requireAuth?: boolean;
-  requiredRole?: string | string[];
-  fallbackPath?: string;
-  allowGuestAccess?: boolean;
-}
+// Role-based access check
+const InsufficientPermissions = ({
+  onGoBack,
+  onGoToDashboard,
+}: {
+  onGoBack: () => void;
+  onGoToDashboard: () => void;
+}) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="max-w-md mx-auto text-center p-6 bg-white rounded-lg shadow-lg">
+      <div className="mb-6">
+        <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+          <svg
+            className="w-8 h-8 text-orange-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
+            />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+        <p className="text-gray-600 mb-6">
+          You don't have the required permissions to access this page.
+        </p>
+      </div>
 
-const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
+      <div className="space-y-3">
+        <button
+          onClick={onGoBack}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200"
+        >
+          Go Back
+        </button>
+        <button
+          onClick={onGoToDashboard}
+          className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Configuration for the protected layout
+// You can customize these values based on your needs
+const LAYOUT_CONFIG = {
+  requireAuth: true,
+  requiredRole: undefined as string | string[] | undefined,
+  fallbackPath: "/login",
+  allowGuestAccess: false,
+};
+
+export default function ProtectedLayout({
   children,
-  requireAuth = true,
-  requiredRole,
-  fallbackPath = "/login",
-  allowGuestAccess = false,
-}) => {
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { user, token, isAuthenticated, isLoading, error, tokenExpiresAt } =
+  const { user, token, isAuthenticated, isLoading, error } =
     useSelector(selectAuth);
 
   const [isVerifying, setIsVerifying] = useState(true);
@@ -221,7 +270,7 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
   // Check for role-based access
   const hasRequiredRole = (
     userRole: string | undefined,
-    required: string | string[]
+    required: string | string[] | undefined
   ): boolean => {
     if (!required || !userRole) return true;
 
@@ -234,7 +283,7 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
 
   // Handle redirect to login
   const handleRedirectToLogin = () => {
-    router.push(fallbackPath);
+    router.push(LAYOUT_CONFIG.fallbackPath);
   };
 
   // Update user activity
@@ -286,30 +335,23 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
   useEffect(() => {
     if (
       hasCheckedAuth &&
-      requireAuth &&
-      !allowGuestAccess &&
+      LAYOUT_CONFIG.requireAuth &&
+      !LAYOUT_CONFIG.allowGuestAccess &&
       !isAuthenticated
     ) {
       // Add a small delay to prevent flash of content
       const timer = setTimeout(() => {
-        router.push(fallbackPath);
+        router.push(LAYOUT_CONFIG.fallbackPath);
       }, 100);
 
       return () => clearTimeout(timer);
     }
-  }, [
-    hasCheckedAuth,
-    requireAuth,
-    isAuthenticated,
-    allowGuestAccess,
-    router,
-    fallbackPath,
-  ]);
+  }, [hasCheckedAuth, isAuthenticated, router]);
 
   // Show loading state while checking authentication
-  //   if (!hasCheckedAuth || isVerifying || isLoading) {
-  //     return <LoadingSpinner />;
-  //   }
+  if (!hasCheckedAuth || isVerifying || isLoading) {
+    return <LoadingSpinner />;
+  }
 
   // Handle different error states
   if (error) {
@@ -322,64 +364,28 @@ const ProtectedLayout: React.FC<ProtectedLayoutProps> = ({
   }
 
   // If authentication is required but user is not authenticated
-  if (requireAuth && !allowGuestAccess && !isAuthenticated) {
+  if (
+    LAYOUT_CONFIG.requireAuth &&
+    !LAYOUT_CONFIG.allowGuestAccess &&
+    !isAuthenticated
+  ) {
     return <UnauthorizedAccess onRedirect={handleRedirectToLogin} />;
   }
 
   // Check for required role
   if (
     isAuthenticated &&
-    requiredRole &&
-    !hasRequiredRole(user?.role, requiredRole)
+    LAYOUT_CONFIG.requiredRole &&
+    !hasRequiredRole(user?.role, LAYOUT_CONFIG.requiredRole)
   ) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md mx-auto text-center p-6 bg-white rounded-lg shadow-lg">
-          <div className="mb-6">
-            <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-              <svg
-                className="w-8 h-8 text-orange-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
-                />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Access Denied
-            </h2>
-            <p className="text-gray-600 mb-6">
-              You don't have the required permissions to access this page.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <button
-              onClick={() => router.back()}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200"
-            >
-              Go Back
-            </button>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
+      <InsufficientPermissions
+        onGoBack={() => router.back()}
+        onGoToDashboard={() => router.push("/dashboard")}
+      />
     );
   }
 
   // Render children if authenticated or guest access is allowed
   return <div className="min-h-screen bg-gray-50">{children}</div>;
-};
-
-export default ProtectedLayout;
+}
