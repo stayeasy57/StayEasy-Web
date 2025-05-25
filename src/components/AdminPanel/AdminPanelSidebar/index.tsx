@@ -94,8 +94,8 @@ const AdminPanelSidebar = () => {
     },
     {
       icon: <Calendar size={16} />,
-      label: "Reservation",
-      route: "/admin/reservations",
+      label: "Properties",
+      route: "/admin/properties",
       notification: 0,
     },
     {

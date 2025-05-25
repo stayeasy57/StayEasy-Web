@@ -38,6 +38,83 @@ interface UsersQueryParams {
   isActive?: boolean;
 }
 
+// Define interfaces for Properties API
+interface Property {
+  id: number;
+  landlordId: number;
+  ownerName: string;
+  ownerContact: string;
+  ownerEmail: string;
+  hostelName: string;
+  hostelAddress: string;
+  landmark: string;
+  hostelCity: string;
+  latLong: any[];
+  step: number;
+  accommodationType: string;
+  propertyGender: string;
+  idealFor: string;
+  description: string | null;
+  isProvidedFood: boolean;
+  mealProvided: string[];
+  foodType: string[];
+  roomFacilities: string[];
+  basicFacilities: string[];
+  otherFacilities: string[];
+  roomImages: any[];
+  messImages: any[];
+  washroomImages: any[];
+  otherImages: any[];
+  noticePeriodDays: number | null;
+  isDraft: boolean;
+  isCompleted: boolean;
+  isPublished: boolean;
+  totalBeds: number;
+  availableBeds: number;
+  createdAt: string;
+  updatedAt: string;
+  landlord: {
+    id: number;
+    userId: number;
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      fullName: string;
+      email: string;
+      phoneNumber: string;
+    };
+  };
+  _count: {
+    roomTypes: number;
+    bookings: number;
+    reviews: number;
+  };
+}
+
+interface PropertiesResponse {
+  statusCode: number;
+  message: string;
+  data: Property[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+interface PropertiesQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+  accommodationType?: string;
+  isPublished?: boolean;
+  isDraft?: boolean;
+}
+
 // Define our API with endpoints
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -57,7 +134,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users"], // Add tag types for caching
+  tagTypes: ["Users", "Properties"], // Add tag types for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -114,6 +191,52 @@ export const authApi = createApi({
       providesTags: ["Users"],
     }),
 
+    // Properties API endpoint for Admin
+    getPropertiesForAdmin: builder.query<
+      PropertiesResponse,
+      PropertiesQueryParams
+    >({
+      query: (params = {}) => {
+        const {
+          page = 1,
+          limit = 10,
+          search,
+          isActive,
+          accommodationType,
+          isPublished,
+          isDraft,
+        } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        if (accommodationType && accommodationType !== "all") {
+          searchParams.append("accommodationType", accommodationType);
+        }
+
+        if (isPublished !== undefined) {
+          searchParams.append("isPublished", isPublished.toString());
+        }
+
+        if (isDraft !== undefined) {
+          searchParams.append("isDraft", isDraft.toString());
+        }
+
+        return `/admin/properties?${searchParams.toString()}`;
+      },
+      providesTags: ["Properties"],
+    }),
+
     // For checking if the current token is valid
     getCurrentUser: builder.query<AuthResponse, void>({
       query: () => "/auth/me",
@@ -130,6 +253,7 @@ export const {
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
+  useGetPropertiesForAdminQuery,
 
   useGetPropertyQuery,
   useGetCurrentUserQuery,
