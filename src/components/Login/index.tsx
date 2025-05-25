@@ -72,9 +72,7 @@ const Login = () => {
             token: response.data?.access_token,
           })
         );
-        console.log("Login successful", response?.data?.user);
         if (response?.data?.user?.userType === "ADMIN") {
-          console.log("admin");
           router.push("/admin/dashboard");
           return;
         }

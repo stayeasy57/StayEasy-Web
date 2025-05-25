@@ -34,6 +34,7 @@ import {
   Settings,
   MoreHorizontal,
 } from "lucide-react";
+import DashboardStats from "./DashboardStats";
 
 // Dummy data
 const newBookingsData = {
@@ -622,7 +623,7 @@ const BookingList = () => {
 const AdminDashboard = () => {
   return (
     <div className="p-6 flex-1 overflow-auto">
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-4 gap-4 mb-6">
         <StatCard
           title="New Bookings"
           value={newBookingsData.count}
@@ -651,6 +652,10 @@ const AdminDashboard = () => {
           period={totalRevenueData.period}
           icon={<DollarSign size={18} className="text-gray-400" />}
         />
+      </div> */}
+
+      <div>
+        <DashboardStats />
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">

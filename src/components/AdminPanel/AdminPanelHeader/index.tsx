@@ -1,13 +1,14 @@
 "use client";
 import { Search, Bell, Settings } from "lucide-react";
 
-import { logout } from "@/store/slices/authSlice";
-import { useDispatch } from "react-redux";
+import { logout, selectAuth } from "@/store/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 
 const AdminPanelHeader = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  const { user } = useSelector(selectAuth);
 
   const handleLogout = async () => {
     dispatch(logout({ reason: "User logged out" } as any) as any);
@@ -39,7 +40,7 @@ const AdminPanelHeader = () => {
             J
           </div>
           <div>
-            <p className="text-sm font-medium">Jaylon Deriwart</p>
+            <p className="text-sm font-medium">{user?.fullName}</p>
             <p className="text-xs text-gray-500">Admin</p>
           </div>
         </div>
