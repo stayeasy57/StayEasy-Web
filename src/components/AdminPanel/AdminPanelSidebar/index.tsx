@@ -50,7 +50,7 @@ const SidebarItem = ({
       className={`flex items-center p-2 text-sm rounded-md cursor-pointer transition-colors duration-200 ${
         isActive
           ? "bg-gray-100 text-gray-900 font-medium"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+          : "text-white hover:bg-gray-50 hover:text-gray-900"
       }`}
       onClick={handleClick}
     >
@@ -144,13 +144,13 @@ const AdminPanelSidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-screen p-4">
+    <div className="w-64 bg-primary border-r border-gray-200 h-screen p-4">
       {/* Logo Section */}
       <div className="flex items-center mb-8 px-2">
         <div className="w-10 h-10 mr-2 bg-primary flex items-center justify-center">
           <img src="/navbar-logo.png" alt="logo" width="70" height="70" />
         </div>
-        <span className="text-xl font-bold">StayEasy</span>
+        <span className="text-xl text-white font-bold">StayEasy</span>
       </div>
 
       {/* Navigation Menu */}
@@ -167,18 +167,6 @@ const AdminPanelSidebar = () => {
           />
         ))}
       </nav>
-
-      {/* Optional: User/Settings section at bottom */}
-      <div className="absolute bottom-4 left-4 right-4">
-        <div className="border-t border-gray-200 pt-4">
-          <SidebarItem
-            icon={<Settings size={16} />}
-            label="Settings"
-            route="/admin/settings"
-            isActive={isRouteActive("/admin/settings")}
-          />
-        </div>
-      </div>
     </div>
   );
 };
