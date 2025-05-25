@@ -64,6 +64,9 @@ interface Property {
   roomImages: any[];
   messImages: any[];
   washroomImages: any[];
+  roomTypes?: any[];
+  reviews?: any[];
+  bookings?: any[];
   otherImages: any[];
   noticePeriodDays: number | null;
   isDraft: boolean;

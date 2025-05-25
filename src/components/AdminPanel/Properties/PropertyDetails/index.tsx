@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from "react";
+import { useParams } from "next/navigation";
+import { useGetPropertyByAdminQuery } from "@/store/api/apiSlice";
 import {
   Building2,
   MapPin,
@@ -34,6 +36,8 @@ import {
   ChevronUp,
   AlertTriangle,
   Info,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 interface Property {
@@ -89,58 +93,22 @@ interface Property {
 }
 
 const PropertyDetails: React.FC = () => {
-  // Sample property data
-  const [property] = useState<Property>({
-    id: 1,
-    landlordId: 1,
-    ownerName: "Asim Maqsood ",
-    ownerContact: "34578999963",
-    ownerEmail: "asimmaqsood57@gmail.com",
-    hostelName: "Aayat Boys Hostel ",
-    hostelAddress: "h13",
-    landmark: "NUST University ",
-    hostelCity: "Islamabad ",
-    latLong: [],
-    step: 3,
-    accommodationType: "HOSTEL",
-    propertyGender: "BOYS",
-    idealFor: "STUDENTS",
-    description: null,
-    isProvidedFood: true,
-    mealProvided: ["Breakfast", "High Tea", "Dinner"],
-    foodType: ["All"],
-    roomFacilities: ["Bed", "Study Table"],
-    basicFacilities: ["Refrigerator", "Hot water"],
-    otherFacilities: ["Self Cooking", "Induction"],
-    roomImages: [],
-    messImages: [],
-    washroomImages: [],
-    otherImages: [],
-    noticePeriodDays: null,
-    isDraft: true,
-    isCompleted: false,
-    isPublished: false,
-    totalBeds: 0,
-    availableBeds: 0,
-    createdAt: "2025-05-24T16:39:40.331Z",
-    updatedAt: "2025-05-24T16:40:13.900Z",
-    landlord: {
-      id: 1,
-      userId: 1,
-      createdAt: "2025-05-24T16:35:51.530Z",
-      updatedAt: "2025-05-24T16:35:51.530Z",
-      user: {
-        fullName: "landlord",
-        email: "landlord@example.com",
-        phoneNumber: "3015846975",
-      },
-    },
-    _count: {
-      roomTypes: 0,
-      bookings: 0,
-      reviews: 0,
-    },
+  // Get property ID from URL params
+  const params = useParams();
+  const propertyId = params?.id as string;
+
+  // Fetch property data using RTK Query
+  const {
+    data: propertyResponse,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetPropertyByAdminQuery(propertyId, {
+    skip: !propertyId, // Skip query if no ID is provided
   });
+
+  const property = propertyResponse?.data;
 
   const [expandedSections, setExpandedSections] = useState({
     facilities: true,
@@ -168,6 +136,8 @@ const PropertyDetails: React.FC = () => {
 
   // Get status badge
   const getStatusBadge = () => {
+    if (!property) return null;
+
     if (property.isPublished) {
       return (
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
@@ -194,6 +164,8 @@ const PropertyDetails: React.FC = () => {
 
   // Get completion badge
   const getCompletionBadge = () => {
+    if (!property) return null;
+
     const percentage = (property.step / 5) * 100;
     return (
       <div className="flex items-center space-x-2">
@@ -264,6 +236,62 @@ const PropertyDetails: React.FC = () => {
     return <Home className="w-4 h-4" />;
   };
 
+  // Loading component
+  const LoadingState = () => (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+        <p className="text-gray-600">Loading property details...</p>
+      </div>
+    </div>
+  );
+
+  // Error component
+  const ErrorState = () => (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md mx-auto text-center p-6 bg-white rounded-lg shadow-lg border border-red-200">
+        <div className="mb-6">
+          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Failed to Load Property
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {(error as any)?.data?.message ||
+              (error as any)?.message ||
+              "Property not found or an error occurred"}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <button
+            onClick={() => refetch()}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Try Again
+          </button>
+          <button
+            onClick={() => window.history.back()}
+            className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Show loading state
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  // Show error state
+  if (isError || !property) {
+    return <ErrorState />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -271,7 +299,10 @@ const PropertyDetails: React.FC = () => {
         <div className=" px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <button className="p-2 hover:bg-gray-100 rounded-md transition-colors">
+              <button
+                onClick={() => window.history.back()}
+                className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+              >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
@@ -351,19 +382,19 @@ const PropertyDetails: React.FC = () => {
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-gray-900">
-                      {property._count.roomTypes}
+                      {property?.roomTypes?.length}
                     </div>
                     <div className="text-sm text-gray-600">Room Types</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-gray-900">
-                      {property._count.bookings}
+                      {property?.bookings?.length}
                     </div>
                     <div className="text-sm text-gray-600">Bookings</div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <div className="text-2xl font-bold text-gray-900">
-                      {property._count.reviews}
+                      {property?.reviews?.length}
                     </div>
                     <div className="text-sm text-gray-600">Reviews</div>
                   </div>
@@ -416,69 +447,76 @@ const PropertyDetails: React.FC = () => {
                 {expandedSections.facilities && (
                   <div className="mt-4 space-y-6">
                     {/* Room Facilities */}
-                    <div>
-                      <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                        <Bed className="w-4 h-4 mr-2" />
-                        Room Facilities
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {property.roomFacilities.map((facility, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md"
-                          >
-                            {getFacilityIcon(facility)}
-                            <span className="text-sm text-gray-700">
-                              {facility}
-                            </span>
+                    {property.roomFacilities &&
+                      property.roomFacilities.length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                            <Bed className="w-4 h-4 mr-2" />
+                            Room Facilities
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {property.roomFacilities.map((facility, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md"
+                              >
+                                {getFacilityIcon(facility)}
+                                <span className="text-sm text-gray-700">
+                                  {facility}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
+                      )}
 
                     {/* Basic Facilities */}
-                    <div>
-                      <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                        <Home className="w-4 h-4 mr-2" />
-                        Basic Facilities
-                      </h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {property.basicFacilities.map((facility, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center space-x-2 p-2 bg-green-50 rounded-md"
-                          >
-                            {getFacilityIcon(facility)}
-                            <span className="text-sm text-gray-700">
-                              {facility}
-                            </span>
+                    {property.basicFacilities &&
+                      property.basicFacilities.length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                            <Home className="w-4 h-4 mr-2" />
+                            Basic Facilities
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {property.basicFacilities.map((facility, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center space-x-2 p-2 bg-green-50 rounded-md"
+                              >
+                                {getFacilityIcon(facility)}
+                                <span className="text-sm text-gray-700">
+                                  {facility}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
+                      )}
 
                     {/* Other Facilities */}
-                    {property.otherFacilities.length > 0 && (
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center">
-                          <Star className="w-4 h-4 mr-2" />
-                          Additional Facilities
-                        </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {property.otherFacilities.map((facility, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center space-x-2 p-2 bg-purple-50 rounded-md"
-                            >
-                              {getFacilityIcon(facility)}
-                              <span className="text-sm text-gray-700">
-                                {facility}
-                              </span>
-                            </div>
-                          ))}
+                    {property.otherFacilities &&
+                      property.otherFacilities.length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center">
+                            <Star className="w-4 h-4 mr-2" />
+                            Additional Facilities
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {property.otherFacilities.map((facility, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center space-x-2 p-2 bg-purple-50 rounded-md"
+                              >
+                                {getFacilityIcon(facility)}
+                                <span className="text-sm text-gray-700">
+                                  {facility}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 )}
               </div>
@@ -505,37 +543,42 @@ const PropertyDetails: React.FC = () => {
 
                   {expandedSections.meals && (
                     <div className="mt-4 space-y-4">
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-2">
-                          Meals Provided
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {property.mealProvided.map((meal, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm"
-                            >
-                              {meal}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                      {property.mealProvided &&
+                        property.mealProvided.length > 0 && (
+                          <div>
+                            <h4 className="text-md font-medium text-gray-800 mb-2">
+                              Meals Provided
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {property.mealProvided.map((meal, index) => (
+                                <span
+                                  key={index}
+                                  className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm"
+                                >
+                                  {meal}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-2">
-                          Food Type
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {property.foodType.map((type, index) => (
-                            <span
-                              key={index}
-                              className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
-                            >
-                              {type}
-                            </span>
-                          ))}
+                      {property.foodType && property.foodType.length > 0 && (
+                        <div>
+                          <h4 className="text-md font-medium text-gray-800 mb-2">
+                            Food Type
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {property.foodType.map((type, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm"
+                              >
+                                {type}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -563,12 +606,15 @@ const PropertyDetails: React.FC = () => {
                 {expandedSections.images && (
                   <div className="mt-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {/* Placeholder images */}
+                      {/* Image categories */}
                       {[
-                        "Room Images",
-                        "Mess Images",
-                        "Washroom Images",
-                        "Other Images",
+                        { name: "Room Images", images: property.roomImages },
+                        { name: "Mess Images", images: property.messImages },
+                        {
+                          name: "Washroom Images",
+                          images: property.washroomImages,
+                        },
+                        { name: "Other Images", images: property.otherImages },
                       ].map((category, index) => (
                         <div
                           key={index}
@@ -576,9 +622,13 @@ const PropertyDetails: React.FC = () => {
                         >
                           <div className="text-center">
                             <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">{category}</p>
+                            <p className="text-sm text-gray-500">
+                              {category.name}
+                            </p>
                             <p className="text-xs text-gray-400">
-                              No images uploaded
+                              {category.images && category.images.length > 0
+                                ? `${category.images.length} image(s)`
+                                : "No images uploaded"}
                             </p>
                           </div>
                         </div>
@@ -640,18 +690,20 @@ const PropertyDetails: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-gray-200">
-                      <h5 className="text-sm font-medium text-gray-800 mb-2">
-                        Account Details
-                      </h5>
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <div>Landlord ID: {property.landlord.id}</div>
-                        <div>User ID: {property.landlord.userId}</div>
-                        <div>
-                          Joined: {formatDate(property.landlord.createdAt)}
+                    {property.landlord && (
+                      <div className="pt-4 border-t border-gray-200">
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">
+                          Account Details
+                        </h5>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div>Landlord ID: {property.landlord.id}</div>
+                          <div>User ID: {property.landlord.userId}</div>
+                          <div>
+                            Joined: {formatDate(property.landlord.createdAt)}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
