@@ -7,10 +7,9 @@ const AdminLayout = ({ children }: any) => {
     <div>
       <div className="flex min-h-screen bg-gray-50 text-gray-800">
         <AdminPanelSidebar />
-
         <div className="flex-1 flex flex-col">
           <AdminPanelHeader />
-          <main>{children}</main>
+          <main className="h-[calc(100vh-75px)] overflow-auto">{children}</main>
         </div>
       </div>
     </div>
