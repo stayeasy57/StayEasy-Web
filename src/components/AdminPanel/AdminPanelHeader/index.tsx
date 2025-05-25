@@ -1,6 +1,19 @@
+"use client";
 import { Search, Bell, Settings } from "lucide-react";
 
+import { logout } from "@/store/slices/authSlice";
+import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+
 const AdminPanelHeader = () => {
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    dispatch(logout({ reason: "User logged out" } as any) as any);
+    router.push("/login");
+  };
+
   return (
     <div className="flex justify-between items-center px-6 py-3 border-b border-gray-200">
       <h1 className="text-xl font-bold">Dashboard</h1>
@@ -31,6 +44,14 @@ const AdminPanelHeader = () => {
           </div>
         </div>
         <Settings size={18} />
+        <div>
+          <button
+            className="text-sm text-gray-600 hover:text-gray-800"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );

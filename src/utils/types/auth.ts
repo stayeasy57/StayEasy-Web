@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  role?: string;
 }
 
 export interface AuthState {
@@ -10,6 +11,9 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  tokenExpiresAt?: any | null;
+  refreshTokenPromise?: any;
+  lastActivity?: any | null;
 }
 
 export interface LoginRequest {
