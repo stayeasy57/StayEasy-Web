@@ -557,7 +557,7 @@ const DashboardStats: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="p-6">
+          <div className="p-6 ">
             {data.recentBookings && data.recentBookings.length > 0 ? (
               <div className="space-y-6">
                 {data.recentBookings.map((booking: any) => (
