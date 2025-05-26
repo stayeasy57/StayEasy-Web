@@ -654,7 +654,7 @@ const AdminDashboard = () => {
         />
       </div> */}
 
-      <div>
+      <div className="mb-6">
         <DashboardStats />
       </div>
 

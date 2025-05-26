@@ -647,36 +647,102 @@ const PropertyDetails: React.FC = () => {
                 </button>
 
                 {expandedSections.images && (
-                  <div className="mt-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {/* Image categories */}
-                      {[
-                        { name: "Room Images", images: property.roomImages },
-                        { name: "Mess Images", images: property.messImages },
-                        {
-                          name: "Washroom Images",
-                          images: property.washroomImages,
-                        },
-                        { name: "Other Images", images: property.otherImages },
-                      ].map((category, index) => (
-                        <div
-                          key={index}
-                          className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300"
+                  <div className="mt-4 space-y-6">
+                    {/* Image categories */}
+                    {[
+                      {
+                        name: "Room Images",
+                        images: property.roomImages,
+                        color: "blue",
+                      },
+                      {
+                        name: "Mess Images",
+                        images: property.messImages,
+                        color: "orange",
+                      },
+                      {
+                        name: "Washroom Images",
+                        images: property.washroomImages,
+                        color: "green",
+                      },
+                      {
+                        name: "Other Images",
+                        images: property.otherImages,
+                        color: "purple",
+                      },
+                    ].map((category, categoryIndex) => (
+                      <div key={categoryIndex}>
+                        <h4
+                          className={`text-md font-medium text-gray-800 mb-3 flex items-center border-l-4 border-${category.color}-500 pl-3`}
                         >
-                          <div className="text-center">
-                            <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">
-                              {category.name}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {category.images && category.images.length > 0
-                                ? `${category.images.length} image(s)`
-                                : "No images uploaded"}
-                            </p>
+                          <ImageIcon className="w-4 h-4 mr-2" />
+                          {category.name}
+                          <span className="ml-2 text-sm text-gray-500">
+                            (
+                            {category.images && category.images.length > 0
+                              ? category.images.length
+                              : 0}{" "}
+                            images)
+                          </span>
+                        </h4>
+
+                        {category.images && category.images.length > 0 ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {category.images.map((imageUrl, imageIndex) => (
+                              <div key={imageIndex} className="group relative">
+                                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300">
+                                  <img
+                                    src={imageUrl}
+                                    alt={`${category.name} ${imageIndex + 1}`}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    onError={(e) => {
+                                      const target =
+                                        e.target as HTMLImageElement;
+                                      target.style.display = "none";
+                                      const parent = target.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `
+                                          <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                                            <div class="text-center">
+                                              <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                              </svg>
+                                              <p class="text-xs text-gray-500">Failed to load</p>
+                                            </div>
+                                          </div>
+                                        `;
+                                      }
+                                    }}
+                                  />
+                                </div>
+
+                                {/* Image overlay with preview button */}
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                  <button
+                                    onClick={() =>
+                                      window.open(imageUrl, "_blank")
+                                    }
+                                    className="bg-white text-gray-900 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors flex items-center space-x-2"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                    <span>View</span>
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ) : (
+                          <div className="aspect-video bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                            <div className="text-center">
+                              <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                              <p className="text-sm text-gray-500">
+                                No {category.name.toLowerCase()} uploaded
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -807,9 +873,15 @@ const PropertyDetails: React.FC = () => {
                 <div className="space-y-3">
                   <button
                     onClick={() => handleAction("approve")}
-                    disabled={!property.isCompleted || isPublishing}
+                    disabled={
+                      !property.isCompleted ||
+                      isPublishing ||
+                      property.isPublished
+                    }
                     className={`w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium transition-colors ${
-                      property.isCompleted && !isPublishing
+                      property.isCompleted &&
+                      !isPublishing &&
+                      !property.isPublished
                         ? "text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         : "text-gray-400 bg-gray-300 cursor-not-allowed"
                     }`}
@@ -818,6 +890,11 @@ const PropertyDetails: React.FC = () => {
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Publishing...
+                      </>
+                    ) : property.isPublished ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Already Published
                       </>
                     ) : (
                       <>
