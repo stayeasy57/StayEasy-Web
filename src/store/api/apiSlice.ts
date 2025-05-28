@@ -137,6 +137,25 @@ interface PublishPropertyResponse {
   data?: any;
 }
 
+// Define interfaces for Booking API
+interface CreateBookingRequest {
+  propertyId: number;
+  roomTypeId: number;
+  checkInDate: string; // Format: "YYYY-MM-DD"
+  checkOutDate: string; // Format: "YYYY-MM-DD"
+  numberOfBeds: number;
+  tenantName: string;
+  tenantEmail: string;
+  universityOrOffice: string;
+  semesterOrDesignation: string;
+}
+
+interface CreateBookingResponse {
+  statusCode: number;
+  message: string;
+  data?: any;
+}
+
 // Define our API with endpoints
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -156,7 +175,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users", "Properties", "Property"], // Add tag types for caching
+  tagTypes: ["Users", "Properties", "Property", "Bookings"], // Add Bookings tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -183,6 +202,19 @@ export const authApi = createApi({
     }),
     getProperty: builder.query<any, any>({
       query: (id) => `/properties/${id}`,
+    }),
+
+    // BOOKING API --------------------
+    createBooking: builder.mutation<
+      CreateBookingResponse,
+      CreateBookingRequest
+    >({
+      query: (bookingData) => ({
+        url: "/bookings",
+        method: "POST",
+        body: bookingData,
+      }),
+      invalidatesTags: ["Bookings", "Properties"], // Invalidate bookings and properties cache after creating a booking
     }),
 
     // ADMIN --------------------
@@ -298,6 +330,8 @@ export const {
   useSignupMutation,
   useLogoutMutation,
   useGetPropertiesQuery,
+  // BOOKING
+  useCreateBookingMutation,
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,

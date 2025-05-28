@@ -93,11 +93,13 @@ const HostelDetail = () => {
     router.push(
       `/property-details/${id}/property-reserve/?propertyName=${
         propertyData?.hostelName
-      }&roomType=${roomType.occupancyType}&securityDeposit=${
-        roomType.securityDeposit
-      }&rentAmount=${roomType.rentAmount}&total=${
+      }&roomType=${roomType.occupancyType}&roomTypeId=${
+        roomType.id
+      }&securityDeposit=${roomType.securityDeposit}&rentAmount=${
+        roomType.rentAmount
+      }&total=${
         roomType.rentAmount + roomType.securityDeposit
-      }`
+      }&propertyId=${id}`
     );
   };
 
