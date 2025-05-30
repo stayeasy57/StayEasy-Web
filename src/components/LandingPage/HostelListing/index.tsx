@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import { Button } from "primereact/button";
-
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
 import { useGetPropertiesQuery } from "@/store/api/apiSlice";
-
 import { Skeleton } from "primereact/skeleton";
+import {
+  selectIsAuthenticated,
+  selectToken,
+  checkTokenExpiration,
+} from "@/store/slices/authSlice"; // Adjust import path as needed
 
 // Interfaces
-
 interface FilterOption {
   id: string;
   label: string;
@@ -85,8 +87,34 @@ const HostelListing = () => {
   const [propertiesList, setPropertiesList] = useState([]);
   const [favorites, setFavorites] = useState<any>([]);
 
-  // api
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  // Redux selectors
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const token = useSelector(selectToken);
+
+  // API
   const { data: propertiesData, isLoading } = useGetPropertiesQuery();
+
+  // Check authentication and handle property details navigation
+  const handleViewDetails = (hostelId: string) => {
+    // First check if token is expired
+    dispatch(checkTokenExpiration());
+
+    if (isAuthenticated && token) {
+      router.push(`/property-details/${hostelId}`);
+    } else {
+      // Store the intended destination for redirect after login
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "redirectAfterLogin",
+          `/property-details/${hostelId}`
+        );
+      }
+      router.push("/login");
+    }
+  };
 
   // Toggle filter selection
   const toggleFilter = (categoryId: any, optionId: any) => {
@@ -96,8 +124,20 @@ const HostelListing = () => {
     }));
   };
 
-  // Toggle favorites
+  // Toggle favorites (also require authentication)
   const toggleFavorite = (hostelId: any) => {
+    // Check if user is authenticated before allowing favorites
+    dispatch(checkTokenExpiration());
+
+    if (!isAuthenticated || !token) {
+      // Redirect to login if not authenticated
+      if (typeof window !== "undefined") {
+        localStorage.setItem("redirectAfterLogin", window.location.pathname);
+      }
+      router.push("/login");
+      return;
+    }
+
     setFavorites((prev: any) =>
       prev.includes(hostelId)
         ? prev.filter((id: any) => id !== hostelId)
@@ -110,6 +150,11 @@ const HostelListing = () => {
       setPropertiesList(propertiesData?.data);
     }
   }, [propertiesData]);
+
+  // Check token expiration on component mount
+  useEffect(() => {
+    dispatch(checkTokenExpiration());
+  }, [dispatch]);
 
   return (
     <div className="bg-gray-100">
@@ -209,6 +254,30 @@ const HostelListing = () => {
                       <div className="absolute bottom-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded">
                         {hostel.propertyGender}
                       </div>
+                      {/* Property Views */}
+                      <div className="absolute top-2 left-2 bg-primary bg-opacity-60 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3 w-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                        <span>{hostel.totalViews || 0}</span>
+                      </div>
                     </div>
 
                     {/* Hostel details */}
@@ -292,11 +361,12 @@ const HostelListing = () => {
                         </div>
                       </div>
                       <div className="flex justify-end gap-3">
-                        <Link href={`/property-details/${hostel.id}`}>
-                          <button className="bg-white text-primary underline cursor-pointer py-2 px-4 rounded font-medium">
-                            See Details
-                          </button>
-                        </Link>
+                        <button
+                          onClick={() => handleViewDetails(hostel.id)}
+                          className="bg-white text-primary underline cursor-pointer py-2 px-4 rounded font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          See Details
+                        </button>
                       </div>
                     </div>
                   </div>
