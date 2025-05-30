@@ -17,6 +17,10 @@ import {
   MapPin,
   DollarSign,
   BedDouble,
+  Eye,
+  TrendingUp,
+  Award,
+  Globe,
 } from "lucide-react";
 
 interface DashboardData {
@@ -30,9 +34,16 @@ interface DashboardData {
       properties: number;
       bookings: number;
       reviews: number;
+      propertyViews: number;
       activeUsers: number;
       pendingBookings: number;
       publishedProperties: number;
+    };
+    viewStats: {
+      totalViews: number;
+      uniqueViewers: number;
+      recentViews: number;
+      averageViewsPerProperty: number;
     };
     recentBookings: Array<{
       id: number;
@@ -75,6 +86,33 @@ interface DashboardData {
       userType: string;
       createdAt: string;
     }>;
+    recentPropertyViews: Array<{
+      id: number;
+      propertyId: number;
+      tenantId: number;
+      viewedAt: string;
+      ipAddress: string;
+      userAgent: string;
+      duration: number | null;
+      property: {
+        hostelName: string;
+        hostelCity: string;
+      };
+      tenant: {
+        id: number;
+        userId: number;
+        user: {
+          fullName: string;
+        };
+      };
+    }>;
+    topPropertiesThisMonth: Array<{
+      id: number;
+      hostelName: string;
+      hostelCity: string;
+      totalViews: number;
+      monthlyViews: number;
+    }>;
     bookingStats: {
       PENDING: number;
       CONFIRMED: number;
@@ -102,6 +140,16 @@ const DashboardStats: React.FC = () => {
       year: "numeric",
       month: "short",
       day: "numeric",
+    });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -168,12 +216,14 @@ const DashboardStats: React.FC = () => {
     icon: Icon,
     color,
     isLoading = false,
+    subtitle,
   }: {
     title: string;
     value: number;
     icon: any;
     color: string;
     isLoading?: boolean;
+    subtitle?: string;
   }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
@@ -185,7 +235,12 @@ const DashboardStats: React.FC = () => {
               <span className="text-2xl font-bold text-gray-400">--</span>
             </div>
           ) : (
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
+            <>
+              <p className="text-3xl font-bold text-gray-900">{value}</p>
+              {subtitle && (
+                <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+              )}
+            </>
           )}
         </div>
         <div
@@ -204,7 +259,7 @@ const DashboardStats: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="">
         {/* Loading Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
           <StatCard
             title="Total Users"
             value={0}
@@ -259,6 +314,20 @@ const DashboardStats: React.FC = () => {
             value={0}
             icon={Star}
             color="bg-yellow-500"
+            isLoading
+          />
+          <StatCard
+            title="Property Views"
+            value={0}
+            icon={Eye}
+            color="bg-cyan-500"
+            isLoading
+          />
+          <StatCard
+            title="Unique Viewers"
+            value={0}
+            icon={Globe}
+            color="bg-red-500"
             isLoading
           />
         </div>
@@ -373,8 +442,9 @@ const DashboardStats: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Grid with View Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+          {/* First Row - Core Stats */}
           <StatCard
             title="Total Users"
             value={data.counts?.users || 0}
@@ -404,12 +474,28 @@ const DashboardStats: React.FC = () => {
             value={data.counts?.properties || 0}
             icon={Building}
             color="bg-orange-500"
+            subtitle={`${data.counts?.publishedProperties || 0} published`}
+          />
+
+          {/* Second Row - Property & Engagement Stats */}
+          <StatCard
+            title="Total Property Views"
+            value={data.viewStats?.totalViews || 0}
+            icon={Eye}
+            color="bg-cyan-500"
+            subtitle={`${data.viewStats?.recentViews || 0} in last 7 days`}
           />
           <StatCard
-            title="Published Properties"
-            value={data.counts?.publishedProperties || 0}
-            icon={Building}
-            color="bg-teal-500"
+            title="Unique Viewers"
+            value={data.viewStats?.uniqueViewers || 0}
+            icon={Globe}
+            color="bg-red-500"
+          />
+          <StatCard
+            title="Avg Views/Property"
+            value={data.viewStats?.averageViewsPerProperty || 0}
+            icon={TrendingUp}
+            color="bg-emerald-500"
           />
           <StatCard
             title="Bookings"
@@ -427,7 +513,7 @@ const DashboardStats: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Recent Users */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">
@@ -482,6 +568,63 @@ const DashboardStats: React.FC = () => {
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500">No recent users</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Top Properties This Month */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Top Properties
+                </h2>
+                <span className="text-sm text-gray-500">This Month</span>
+              </div>
+            </div>
+            <div className="p-6">
+              {data.topPropertiesThisMonth &&
+              data.topPropertiesThisMonth.length > 0 ? (
+                <div className="space-y-4">
+                  {data.topPropertiesThisMonth.map(
+                    (property: any, index: number) => (
+                      <div
+                        key={property.id}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-pink-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-sm">
+                              #{index + 1}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {property.hostelName || "Unknown Property"}
+                            </p>
+                            <p className="text-sm text-gray-500 flex items-center">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              {property.hostelCity || "Unknown City"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-gray-900">
+                            {property.monthlyViews || 0}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            views this month
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Award className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No data available</p>
                 </div>
               )}
             </div>
@@ -545,6 +688,156 @@ const DashboardStats: React.FC = () => {
           </div>
         </div>
 
+        {/* Recent Property Views Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Recent Property Views
+                </h2>
+                <span className="text-sm text-gray-500">
+                  {data.recentPropertyViews?.length || 0} views
+                </span>
+              </div>
+            </div>
+            <div className="p-6">
+              {data.recentPropertyViews &&
+              data.recentPropertyViews.length > 0 ? (
+                <div className="space-y-4">
+                  {data.recentPropertyViews.map((view: any) => (
+                    <div
+                      key={view.id}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
+                          <Eye className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {view.property?.hostelName || "Unknown Property"}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            by {view.tenant?.user?.fullName || "Unknown User"}
+                          </p>
+                          <p className="text-xs text-gray-400 flex items-center">
+                            <MapPin className="w-3 h-3 mr-1" />
+                            {view.property?.hostelCity || "Unknown City"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">
+                          {formatDateTime(view.viewedAt)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          View ID: #{view.id}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No recent property views</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* View Statistics Breakdown */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">
+                View Statistics
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Total Views */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Eye className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Total Views</p>
+                      <p className="text-sm text-gray-600">
+                        All time property views
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-bold text-blue-600">
+                    {data.viewStats?.totalViews || 0}
+                  </span>
+                </div>
+
+                {/* Unique Viewers */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        Unique Viewers
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Individual users who viewed
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-bold text-green-600">
+                    {data.viewStats?.uniqueViewers || 0}
+                  </span>
+                </div>
+
+                {/* Recent Views */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                      <TrendingUp className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        Recent Activity
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Views in last 7 days
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-bold text-purple-600">
+                    {data.viewStats?.recentViews || 0}
+                  </span>
+                </div>
+
+                {/* Average per Property */}
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                      <Building className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        Avg per Property
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Average views per property
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-2xl font-bold text-orange-600">
+                    {data.viewStats?.averageViewsPerProperty || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Recent Bookings Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
@@ -557,7 +850,7 @@ const DashboardStats: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="p-6 ">
+          <div className="p-6">
             {data.recentBookings && data.recentBookings.length > 0 ? (
               <div className="space-y-6">
                 {data.recentBookings.map((booking: any) => (
@@ -617,7 +910,9 @@ const DashboardStats: React.FC = () => {
                               Check-out
                             </p>
                             <p className="text-sm font-medium text-gray-900">
-                              {formatDate(booking.checkOutDate)}
+                              {booking.checkOutDate
+                                ? formatDate(booking.checkOutDate)
+                                : "Not set"}
                             </p>
                           </div>
                           <div>
