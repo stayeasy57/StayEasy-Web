@@ -1,7 +1,12 @@
+import Landlords from "@/components/AdminPanel/Landlords";
 import React from "react";
 
 const LandlordsPage = () => {
-  return <div>LandlordsPage</div>;
+  return (
+    <div>
+      <Landlords />
+    </div>
+  );
 };
 
 export default LandlordsPage;

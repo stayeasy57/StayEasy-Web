@@ -38,6 +38,47 @@ interface UsersQueryParams {
   isActive?: boolean;
 }
 
+// Define interfaces for Landlords API
+interface Landlord {
+  id: number;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+  };
+  _count: {
+    properties: number;
+  };
+}
+
+interface LandlordsResponse {
+  statusCode: number;
+  message: string;
+  data: Landlord[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+interface LandlordsQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
 // Define interfaces for Tenants API
 interface Tenant {
   id: number;
@@ -269,7 +310,14 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users", "Tenants", "Properties", "Property", "Bookings"], // Add Tenants tag type for caching
+  tagTypes: [
+    "Users",
+    "Landlords",
+    "Tenants",
+    "Properties",
+    "Property",
+    "Bookings",
+  ], // Add Landlords tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -337,6 +385,29 @@ export const authApi = createApi({
         return `/admin/users?${searchParams.toString()}`;
       },
       providesTags: ["Users"],
+    }),
+
+    // Landlords API endpoint
+    getLandlords: builder.query<LandlordsResponse, LandlordsQueryParams>({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, isActive } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        return `/admin/landlords?${searchParams.toString()}`;
+      },
+      providesTags: ["Landlords"],
     }),
 
     // Tenants API endpoint
@@ -461,6 +532,7 @@ export const {
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
+  useGetLandlordsQuery, // New hook for landlords
   useGetTenantsQuery, // New hook for tenants
   useGetTenantByIdQuery, // New hook for single tenant
   useGetPropertiesForAdminQuery,
