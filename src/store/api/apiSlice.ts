@@ -38,6 +38,60 @@ interface UsersQueryParams {
   isActive?: boolean;
 }
 
+// Define interfaces for Tenants API
+interface Tenant {
+  id: number;
+  userId: number;
+  fatherName: string;
+  fatherContact: string;
+  fatherOccupation: string;
+  motherName: string;
+  motherContact: string;
+  motherOccupation: string;
+  instituteOrOfficeName: string;
+  tenantName: string | null;
+  tenantEmail: string | null;
+  universityOrOffice: string | null;
+  semesterOrDesignation: string | null;
+  instituteOrOfficeAddress: string;
+  documents: any[];
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+  };
+  _count: {
+    bookings: number;
+  };
+}
+
+interface TenantsResponse {
+  statusCode: number;
+  message: string;
+  data: Tenant[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+interface TenantsQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
 // Define interfaces for Properties API
 interface Property {
   id: number;
@@ -175,7 +229,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users", "Properties", "Property", "Bookings"], // Add Bookings tag type for caching
+  tagTypes: ["Users", "Tenants", "Properties", "Property", "Bookings"], // Add Tenants tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -243,6 +297,29 @@ export const authApi = createApi({
         return `/admin/users?${searchParams.toString()}`;
       },
       providesTags: ["Users"],
+    }),
+
+    // Tenants API endpoint
+    getTenants: builder.query<TenantsResponse, TenantsQueryParams>({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, isActive } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        return `/admin/tenants?${searchParams.toString()}`;
+      },
+      providesTags: ["Tenants"],
     }),
 
     // Properties API endpoint for Admin
@@ -335,6 +412,7 @@ export const {
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
+  useGetTenantsQuery, // New hook for tenants
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
   usePublishPropertyMutation,

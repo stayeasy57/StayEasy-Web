@@ -99,10 +99,10 @@ const AdminPanelSidebar = () => {
       notification: 0,
     },
     {
-      icon: <MessageSquare size={16} />,
-      label: "Messages",
-      route: "/admin/messages",
-      notification: 2,
+      icon: <Users size={16} />,
+      label: "Tenants",
+      route: "/admin/tenants",
+      notification: 0,
     },
     {
       icon: <ClipboardList size={16} />,
