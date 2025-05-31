@@ -71,6 +71,40 @@ interface Tenant {
   };
 }
 
+// Interface for single tenant details
+interface TenantDetails {
+  id: number;
+  userId: number;
+  fatherName: string;
+  fatherContact: string;
+  fatherOccupation: string;
+  motherName: string;
+  motherContact: string;
+  motherOccupation: string;
+  instituteOrOfficeName: string;
+  tenantName: string | null;
+  tenantEmail: string | null;
+  universityOrOffice: string | null;
+  semesterOrDesignation: string | null;
+  instituteOrOfficeAddress: string;
+  documents: any[];
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    address: string | null;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+    createdAt: string;
+  };
+  bookings: any[];
+  reviews: any[];
+}
+
 interface TenantsResponse {
   statusCode: number;
   message: string;
@@ -83,6 +117,12 @@ interface TenantsResponse {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
   };
+}
+
+interface TenantDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: TenantDetails;
 }
 
 interface TenantsQueryParams {
@@ -322,6 +362,15 @@ export const authApi = createApi({
       providesTags: ["Tenants"],
     }),
 
+    // Single Tenant API endpoint
+    getTenantById: builder.query<TenantDetailsResponse, string | number>({
+      query: (id) => `/admin/tenants/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Tenants", id },
+        { type: "Tenants", id: "LIST" },
+      ],
+    }),
+
     // Properties API endpoint for Admin
     getPropertiesForAdmin: builder.query<
       PropertiesResponse,
@@ -413,6 +462,7 @@ export const {
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
   useGetTenantsQuery, // New hook for tenants
+  useGetTenantByIdQuery, // New hook for single tenant
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
   usePublishPropertyMutation,

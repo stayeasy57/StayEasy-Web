@@ -27,6 +27,8 @@ import {
   FileText,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+
 interface TenantType {
   id: number;
   userId: number;
@@ -60,6 +62,8 @@ interface TenantType {
 }
 
 const Tenants: React.FC = () => {
+  const router = useRouter();
+
   // State for pagination and filtering
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -191,6 +195,10 @@ const Tenants: React.FC = () => {
       setActiveFilter(value === "true");
     }
     setCurrentPage(1);
+  };
+
+  const handleRowClick = (tenantId: number) => {
+    router.push(`/admin/tenants/${tenantId}`);
   };
 
   // Generate page numbers for pagination
@@ -535,6 +543,7 @@ const Tenants: React.FC = () => {
                     {tenants.map((tenant) => (
                       <tr
                         key={tenant.id}
+                        onClick={() => handleRowClick(tenant.id)}
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
