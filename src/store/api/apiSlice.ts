@@ -38,6 +38,209 @@ interface UsersQueryParams {
   isActive?: boolean;
 }
 
+// Define interfaces for Landlords API
+interface Landlord {
+  id: number;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+  };
+  _count: {
+    properties: number;
+  };
+}
+
+// Interface for single landlord details
+interface LandlordDetails {
+  id: number;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    address: string | null;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+    createdAt: string;
+  };
+  properties: Array<{
+    id: number;
+    landlordId: number;
+    ownerName: string;
+    ownerContact: string;
+    ownerEmail: string;
+    hostelName: string;
+    hostelAddress: string;
+    landmark: string;
+    hostelCity: string;
+    latLong: any[];
+    step: number;
+    accommodationType: string;
+    propertyGender: string;
+    idealFor: string;
+    description: string;
+    isProvidedFood: boolean;
+    mealProvided: string[];
+    foodType: string[];
+    roomFacilities: string[];
+    basicFacilities: string[];
+    otherFacilities: string[];
+    roomImages: string[];
+    messImages: string[];
+    washroomImages: string[];
+    otherImages: string[];
+    propertyDocuments: string[];
+    noticePeriodDays: number;
+    isDraft: boolean;
+    isCompleted: boolean;
+    isPublished: boolean;
+    totalBeds: number;
+    availableBeds: number;
+    totalViews: number;
+    uniqueViews: number;
+    createdAt: string;
+    updatedAt: string;
+    _count: {
+      bookings: number;
+      roomTypes: number;
+    };
+  }>;
+  bookings: any[];
+}
+
+interface LandlordsResponse {
+  statusCode: number;
+  message: string;
+  data: Landlord[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+interface LandlordDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: LandlordDetails;
+}
+
+interface LandlordsQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
+// Define interfaces for Tenants API
+interface Tenant {
+  id: number;
+  userId: number;
+  fatherName: string;
+  fatherContact: string;
+  fatherOccupation: string;
+  motherName: string;
+  motherContact: string;
+  motherOccupation: string;
+  instituteOrOfficeName: string;
+  tenantName: string | null;
+  tenantEmail: string | null;
+  universityOrOffice: string | null;
+  semesterOrDesignation: string | null;
+  instituteOrOfficeAddress: string;
+  documents: any[];
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+  };
+  _count: {
+    bookings: number;
+  };
+}
+
+// Interface for single tenant details
+interface TenantDetails {
+  id: number;
+  userId: number;
+  fatherName: string;
+  fatherContact: string;
+  fatherOccupation: string;
+  motherName: string;
+  motherContact: string;
+  motherOccupation: string;
+  instituteOrOfficeName: string;
+  tenantName: string | null;
+  tenantEmail: string | null;
+  universityOrOffice: string | null;
+  semesterOrDesignation: string | null;
+  instituteOrOfficeAddress: string;
+  documents: any[];
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    address: string | null;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+    createdAt: string;
+  };
+  bookings: any[];
+  reviews: any[];
+}
+
+interface TenantsResponse {
+  statusCode: number;
+  message: string;
+  data: Tenant[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+interface TenantDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: TenantDetails;
+}
+
+interface TenantsQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
 // Define interfaces for Properties API
 interface Property {
   id: number;
@@ -175,7 +378,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users", "Properties", "Property", "Bookings"], // Add Bookings tag type for caching
+  tagTypes: ["Users", "Landlords", "Tenants", "Properties", "Property", "Bookings"], // Add Landlords tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -243,6 +446,70 @@ export const authApi = createApi({
         return `/admin/users?${searchParams.toString()}`;
       },
       providesTags: ["Users"],
+    }),
+
+    // Landlords API endpoint
+    getLandlords: builder.query<LandlordsResponse, LandlordsQueryParams>({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, isActive } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        return `/admin/landlords?${searchParams.toString()}`;
+      },
+      providesTags: ["Landlords"],
+    }),
+
+    // Single Landlord API endpoint
+    getLandlordById: builder.query<LandlordDetailsResponse, string | number>({
+      query: (id) => `/admin/landlords/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Landlords", id },
+        { type: "Landlords", id: "LIST" },
+      ],
+    }),
+
+    // Tenants API endpoint
+    getTenants: builder.query<TenantsResponse, TenantsQueryParams>({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, isActive } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        return `/admin/tenants?${searchParams.toString()}`;
+      },
+      providesTags: ["Tenants"],
+    }),
+
+    // Single Tenant API endpoint
+    getTenantById: builder.query<TenantDetailsResponse, string | number>({
+      query: (id) => `/admin/tenants/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Tenants", id },
+        { type: "Tenants", id: "LIST" },
+      ],
     }),
 
     // Properties API endpoint for Admin
@@ -335,6 +602,10 @@ export const {
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
+  useGetLandlordsQuery, // New hook for landlords
+  useGetLandlordByIdQuery, // New hook for single landlord
+  useGetTenantsQuery, // New hook for tenants
+  useGetTenantByIdQuery, // New hook for single tenant
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
   usePublishPropertyMutation,

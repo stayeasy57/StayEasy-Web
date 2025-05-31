@@ -99,46 +99,27 @@ const AdminPanelSidebar = () => {
       notification: 0,
     },
     {
-      icon: <MessageSquare size={16} />,
-      label: "Messages",
-      route: "/admin/messages",
-      notification: 2,
-    },
-    {
-      icon: <ClipboardList size={16} />,
-      label: "Housekeeping",
-      route: "/admin/housekeeping",
-      notification: 0,
-    },
-    {
-      icon: <Briefcase size={16} />,
-      label: "Inventory",
-      route: "/admin/inventory",
-      notification: 0,
-    },
-    {
-      icon: <Calendar size={16} />,
-      label: "Calendar",
-      route: "/admin/calendar",
-      notification: 0,
-    },
-    {
-      icon: <DollarSign size={16} />,
-      label: "Financials",
-      route: "/admin/financials",
-      notification: 0,
-      hasSubmenu: true,
-    },
-    {
-      icon: <Star size={16} />,
-      label: "Reviews",
-      route: "/admin/reviews",
+      icon: <Users size={16} />,
+      label: "Tenants",
+      route: "/admin/tenants",
       notification: 0,
     },
     {
       icon: <Users size={16} />,
-      label: "Concierge",
-      route: "/admin/concierge",
+      label: "Landlords",
+      route: "/admin/landlords",
+      notification: 0,
+    },
+    {
+      icon: <Briefcase size={16} />,
+      label: "Bookings",
+      route: "/admin/bookings",
+      notification: 0,
+    },
+    {
+      icon: <Briefcase size={16} />,
+      label: "Reviews",
+      route: "/admin/reviews",
       notification: 0,
     },
   ];
@@ -162,7 +143,6 @@ const AdminPanelSidebar = () => {
             label={item.label}
             route={item.route}
             notification={item.notification}
-            hasSubmenu={item.hasSubmenu}
             isActive={isRouteActive(item.route)}
           />
         ))}
