@@ -58,6 +58,68 @@ interface Landlord {
   };
 }
 
+// Interface for single landlord details
+interface LandlordDetails {
+  id: number;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    address: string | null;
+    gender: string | null;
+    isActive: boolean;
+    isVerified: boolean;
+    createdAt: string;
+  };
+  properties: Array<{
+    id: number;
+    landlordId: number;
+    ownerName: string;
+    ownerContact: string;
+    ownerEmail: string;
+    hostelName: string;
+    hostelAddress: string;
+    landmark: string;
+    hostelCity: string;
+    latLong: any[];
+    step: number;
+    accommodationType: string;
+    propertyGender: string;
+    idealFor: string;
+    description: string;
+    isProvidedFood: boolean;
+    mealProvided: string[];
+    foodType: string[];
+    roomFacilities: string[];
+    basicFacilities: string[];
+    otherFacilities: string[];
+    roomImages: string[];
+    messImages: string[];
+    washroomImages: string[];
+    otherImages: string[];
+    propertyDocuments: string[];
+    noticePeriodDays: number;
+    isDraft: boolean;
+    isCompleted: boolean;
+    isPublished: boolean;
+    totalBeds: number;
+    availableBeds: number;
+    totalViews: number;
+    uniqueViews: number;
+    createdAt: string;
+    updatedAt: string;
+    _count: {
+      bookings: number;
+      roomTypes: number;
+    };
+  }>;
+  bookings: any[];
+}
+
 interface LandlordsResponse {
   statusCode: number;
   message: string;
@@ -70,6 +132,12 @@ interface LandlordsResponse {
     hasNextPage: boolean;
     hasPreviousPage: boolean;
   };
+}
+
+interface LandlordDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: LandlordDetails;
 }
 
 interface LandlordsQueryParams {
@@ -310,14 +378,7 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: [
-    "Users",
-    "Landlords",
-    "Tenants",
-    "Properties",
-    "Property",
-    "Bookings",
-  ], // Add Landlords tag type for caching
+  tagTypes: ["Users", "Landlords", "Tenants", "Properties", "Property", "Bookings"], // Add Landlords tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -408,6 +469,15 @@ export const authApi = createApi({
         return `/admin/landlords?${searchParams.toString()}`;
       },
       providesTags: ["Landlords"],
+    }),
+
+    // Single Landlord API endpoint
+    getLandlordById: builder.query<LandlordDetailsResponse, string | number>({
+      query: (id) => `/admin/landlords/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Landlords", id },
+        { type: "Landlords", id: "LIST" },
+      ],
     }),
 
     // Tenants API endpoint
@@ -533,6 +603,7 @@ export const {
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
   useGetLandlordsQuery, // New hook for landlords
+  useGetLandlordByIdQuery, // New hook for single landlord
   useGetTenantsQuery, // New hook for tenants
   useGetTenantByIdQuery, // New hook for single tenant
   useGetPropertiesForAdminQuery,
