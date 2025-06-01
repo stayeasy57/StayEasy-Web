@@ -130,6 +130,23 @@ const ReservationSection = () => {
           text: result?.message || "Booking created successfully!",
           type: "success",
         });
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          mobileNumber: "",
+          universityOrOffice: "",
+          semesterOrDesignation: "",
+          numberOfBeds: 1,
+          checkInDate: "2025-02-03",
+          checkOutDate: "2025-03-03",
+          receiveNotifications: false,
+          nameOnCard: "",
+          cardNumber: "",
+          expiryMonth: "",
+          expiryYear: "",
+          cvv: "",
+        })
       }
     } catch (error: any) {
       console.error("Booking failed:", error);
