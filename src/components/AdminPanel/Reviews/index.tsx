@@ -2,15 +2,11 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useGetLandlordsQuery } from "@/store/api/apiSlice";
+import { useGetReviewsQuery } from "@/store/api/apiSlice";
 import {
-  Users,
-  Mail,
-  Phone,
-  Calendar,
-  Shield,
-  CheckCircle,
-  XCircle,
+  Star,
+  StarHalf,
+  MessageSquare,
   Eye,
   Edit,
   Trash2,
@@ -22,37 +18,65 @@ import {
   Loader2,
   AlertCircle,
   RefreshCw,
-  Home,
   Building2,
-  UserCheck,
-  Crown,
+  User,
+  Calendar,
+  ThumbsUp,
+  ThumbsDown,
+  Flag,
+  CheckCircle,
+  XCircle,
+  Clock,
+  TrendingUp,
+  Users,
+  Award,
 } from "lucide-react";
 
-interface LandlordType {
+interface ReviewType {
   id: number;
-  userId: number;
+  propertyId: number;
+  tenantId: number;
+  bookingId: number;
+  rating: number;
+  review: string;
   createdAt: string;
   updatedAt: string;
-  user: {
+  property: {
     id: number;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    gender: string | null;
-    isActive: boolean;
-    isVerified: boolean;
+    hostelName: string;
+    hostelCity: string;
   };
-  _count: {
-    properties: number;
+  tenant: {
+    id: number;
+    userId: number;
+    fatherName: string;
+    fatherContact: string;
+    fatherOccupation: string;
+    motherName: string;
+    motherContact: string;
+    motherOccupation: string;
+    instituteOrOfficeName: string;
+    tenantName: string;
+    tenantEmail: string;
+    universityOrOffice: string;
+    semesterOrDesignation: string;
+    instituteOrOfficeAddress: string;
+    documents: any[];
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      fullName: string;
+    };
   };
 }
 
-const Landlords: React.FC = () => {
+const Reviews: React.FC = () => {
   const router = useRouter();
   // State for pagination and filtering
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [ratingFilter, setRatingFilter] = useState<number>(0);
   const [activeFilter, setActiveFilter] = useState<boolean | undefined>(
     undefined
   );
@@ -68,23 +92,24 @@ const Landlords: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch landlords with RTK Query
+  // Fetch reviews with RTK Query
   const {
-    data: landlordsDataApi,
+    data: reviewsDataApi,
     isLoading,
     isError,
     error,
     refetch,
-  } = useGetLandlordsQuery({
+  } = useGetReviewsQuery({
     page: currentPage,
     limit: pageSize,
     search: debouncedSearch,
+    rating: ratingFilter,
     isActive: activeFilter,
   });
 
-  // Handle landlord row click
-  const handleLandlordClick = (landlordId: number) => {
-    router.push(`/admin/landlords/${landlordId}`);
+  // Handle review row click
+  const handleReviewClick = (reviewId: number) => {
+    router.push(`/admin/reviews/${reviewId}`);
   };
 
   // Format date helper
@@ -98,51 +123,81 @@ const Landlords: React.FC = () => {
     });
   };
 
-  // Status badge component
-  const StatusBadge = ({
-    isActive,
-    isVerified,
+  // Star rating component
+  const StarRating = ({
+    rating,
+    size = "sm",
   }: {
-    isActive: boolean;
-    isVerified: boolean;
-  }) => (
-    <div className="flex space-x-1">
+    rating: number;
+    size?: "sm" | "md" | "lg";
+  }) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    const emptyStars = 5 - Math.ceil(rating);
+
+    const starSize =
+      size === "sm" ? "w-4 h-4" : size === "md" ? "w-5 h-5" : "w-6 h-6";
+
+    // Full stars
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star
+          key={`full-${i}`}
+          className={`${starSize} text-yellow-400 fill-current`}
+        />
+      );
+    }
+
+    // Half star
+    if (hasHalfStar) {
+      stars.push(
+        <StarHalf
+          key="half"
+          className={`${starSize} text-yellow-400 fill-current`}
+        />
+      );
+    }
+
+    // Empty stars
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <Star key={`empty-${i}`} className={`${starSize} text-gray-300`} />
+      );
+    }
+
+    return <div className="flex items-center space-x-1">{stars}</div>;
+  };
+
+  // Rating badge component
+  const RatingBadge = ({ rating }: { rating: number }) => {
+    const getRatingColor = (rating: number) => {
+      if (rating >= 4.5) return "bg-green-100 text-green-800";
+      if (rating >= 3.5) return "bg-blue-100 text-blue-800";
+      if (rating >= 2.5) return "bg-yellow-100 text-yellow-800";
+      if (rating >= 1.5) return "bg-orange-100 text-orange-800";
+      return "bg-red-100 text-red-800";
+    };
+
+    return (
       <span
-        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-          isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-        }`}
+        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getRatingColor(
+          rating
+        )}`}
       >
-        {isActive ? (
-          <CheckCircle className="w-3 h-3 mr-1" />
-        ) : (
-          <XCircle className="w-3 h-3 mr-1" />
-        )}
-        {isActive ? "Active" : "Inactive"}
+        <Star className="w-3 h-3 mr-1 fill-current" />
+        {rating.toFixed(1)}
       </span>
-      <span
-        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-          isVerified
-            ? "bg-blue-100 text-blue-800"
-            : "bg-yellow-100 text-yellow-800"
-        }`}
-      >
-        {isVerified ? (
-          <CheckCircle className="w-3 h-3 mr-1" />
-        ) : (
-          <XCircle className="w-3 h-3 mr-1" />
-        )}
-        {isVerified ? "Verified" : "Pending"}
-      </span>
-    </div>
-  );
+    );
+  };
 
   // Action buttons component
-  const ActionButtons = ({ landlordId }: { landlordId: number }) => (
+  const ActionButtons = ({ reviewId }: { reviewId: number }) => (
     <div className="flex items-center space-x-2">
       <button
         onClick={(e) => {
           e.stopPropagation();
-          handleLandlordClick(landlordId);
+          handleReviewClick(reviewId);
         }}
         className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
         title="View Details"
@@ -152,16 +207,16 @@ const Landlords: React.FC = () => {
       <button
         onClick={(e) => e.stopPropagation()}
         className="p-1 text-gray-400 hover:text-green-600 transition-colors"
-        title="Edit Landlord"
+        title="Edit Review"
       >
         <Edit className="w-4 h-4" />
       </button>
       <button
         onClick={(e) => e.stopPropagation()}
         className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-        title="Delete Landlord"
+        title="Flag Review"
       >
-        <Trash2 className="w-4 h-4" />
+        <Flag className="w-4 h-4" />
       </button>
       <button
         onClick={(e) => e.stopPropagation()}
@@ -184,7 +239,12 @@ const Landlords: React.FC = () => {
     setCurrentPage(1);
   };
 
-  // Handle filter change
+  // Handle filter changes
+  const handleRatingFilterChange = (value: string) => {
+    setRatingFilter(value === "all" ? 0 : parseInt(value));
+    setCurrentPage(1);
+  };
+
   const handleActiveFilterChange = (value: string) => {
     if (value === "all") {
       setActiveFilter(undefined);
@@ -232,9 +292,9 @@ const Landlords: React.FC = () => {
 
   // Pagination component
   const Pagination = () => {
-    if (!landlordsDataApi?.pagination) return null;
+    if (!reviewsDataApi?.pagination) return null;
 
-    const { pagination } = landlordsDataApi;
+    const { pagination } = reviewsDataApi;
     const totalPages = pagination.totalPages;
     const currentPageNum = pagination.page;
 
@@ -324,7 +384,7 @@ const Landlords: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="p-8 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-        <p className="text-gray-600">Loading landlords...</p>
+        <p className="text-gray-600">Loading reviews...</p>
       </div>
     </div>
   );
@@ -335,7 +395,7 @@ const Landlords: React.FC = () => {
       <div className="p-8 text-center">
         <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-4" />
         <p className="text-gray-900 font-semibold mb-2">
-          Failed to load landlords
+          Failed to load reviews
         </p>
         <p className="text-gray-600 mb-4">
           {(error as any)?.data?.message ||
@@ -375,11 +435,25 @@ const Landlords: React.FC = () => {
     );
   }
 
-  const landlords = landlordsDataApi?.data || [];
-  const pagination = landlordsDataApi?.pagination;
+  const reviews = reviewsDataApi?.data || [];
+  const pagination = reviewsDataApi?.pagination;
+
+  // Calculate statistics
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+      : 0;
+
+  const ratingDistribution = {
+    5: reviews.filter((r) => r.rating === 5).length,
+    4: reviews.filter((r) => r.rating === 4).length,
+    3: reviews.filter((r) => r.rating === 3).length,
+    2: reviews.filter((r) => r.rating === 2).length,
+    1: reviews.filter((r) => r.rating === 1).length,
+  };
 
   return (
-    <div className=" bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="">
         {/* Header with Search and Filters */}
         <div className="mb-8">
@@ -391,11 +465,28 @@ const Landlords: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search by name, email..."
+                  placeholder="Search reviews, properties..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
                 />
+              </div>
+
+              {/* Rating Filter */}
+              <div className="flex items-center space-x-2">
+                <Star className="text-gray-400 w-4 h-4" />
+                <select
+                  value={ratingFilter}
+                  onChange={(e) => handleRatingFilterChange(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Ratings</option>
+                  <option value="5">5 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="2">2 Stars</option>
+                  <option value="1">1 Star</option>
+                </select>
               </div>
 
               {/* Active Filter */}
@@ -408,9 +499,9 @@ const Landlords: React.FC = () => {
                   onChange={(e) => handleActiveFilterChange(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="all">All Landlords</option>
+                  <option value="all">All Reviews</option>
                   <option value="true">Active Only</option>
-                  <option value="false">Inactive Only</option>
+                  <option value="false">Hidden Only</option>
                 </select>
               </div>
 
@@ -423,10 +514,10 @@ const Landlords: React.FC = () => {
               </button>
             </div>
 
-            {/* Add Landlord Button */}
+            {/* Add Review Button */}
             <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
-              <Crown className="w-4 h-4" />
-              <span>Add Landlord</span>
+              <MessageSquare className="w-4 h-4" />
+              <span>Export Reviews</span>
             </button>
           </div>
         </div>
@@ -437,11 +528,11 @@ const Landlords: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
-                  <Crown className="w-6 h-6 text-blue-600" />
+                  <MessageSquare className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Total Landlords
+                    Total Reviews
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {pagination.total}
@@ -452,18 +543,31 @@ const Landlords: React.FC = () => {
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Star className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Active Landlords
+                    Average Rating
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {
-                      landlords.filter((landlord) => landlord.user.isActive)
-                        .length
-                    }
+                    {averageRating.toFixed(1)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <ThumbsUp className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    Positive Reviews
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {reviews.filter((review) => review.rating >= 4).length}
                   </p>
                 </div>
               </div>
@@ -472,35 +576,14 @@ const Landlords: React.FC = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-purple-100 rounded-lg">
-                  <UserCheck className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Verified</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {
-                      landlords.filter((landlord) => landlord.user.isVerified)
-                        .length
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm border-gray-200 border p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Building2 className="w-6 h-6 text-orange-600" />
+                  <Award className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    With Properties
+                    5-Star Reviews
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {
-                      landlords.filter(
-                        (landlord) => landlord._count.properties > 0
-                      ).length
-                    }
+                    {ratingDistribution[5]}
                   </p>
                 </div>
               </div>
@@ -510,29 +593,26 @@ const Landlords: React.FC = () => {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {landlords.length > 0 ? (
+          {reviews.length > 0 ? (
             <>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Landlord
+                        Review
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Contact
+                        Reviewer
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Gender
+                        Property
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
+                        Rating
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Properties
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
+                        Date
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -540,79 +620,75 @@ const Landlords: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {landlords.map((landlord) => (
+                    {reviews.map((review) => (
                       <tr
-                        key={landlord.id}
-                        onClick={() => handleLandlordClick(landlord.id)}
+                        key={review.id}
+                        onClick={() => handleReviewClick(review.id)}
                         className="hover:bg-gray-50 transition-colors cursor-pointer"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                        <td className="px-6 py-4">
+                          <div className="flex items-start">
+                            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-white font-semibold text-sm">
-                                {landlord.user.fullName.charAt(0).toUpperCase()}
+                                {review.id}
                               </span>
                             </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {landlord.user.fullName}
+                            <div className="ml-4 flex-1">
+                              <div className="text-sm font-medium text-gray-900 mb-1">
+                                Review #{review.id}
                               </div>
-                              <div className="text-sm text-gray-500">
-                                ID: {landlord.id} • User ID: {landlord.userId}
-                              </div>
+                              <p className="text-sm text-gray-600 max-w-md overflow-hidden">
+                                <span className="line-clamp-2">
+                                  {review.review}
+                                </span>
+                              </p>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 flex items-center">
-                            <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                            {landlord.user.email}
-                          </div>
-                          <div className="text-sm text-gray-500 flex items-center mt-1">
-                            <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                            {landlord.user.phoneNumber}
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-xs">
+                                {review.tenant.user.fullName
+                                  .charAt(0)
+                                  .toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="ml-3">
+                              <div className="text-sm font-medium text-gray-900">
+                                {review.tenant.user.fullName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {review.tenant.tenantEmail}
+                              </div>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {landlord.user.gender ? (
-                              <span className="capitalize">
-                                {landlord.user.gender}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 italic">
-                                Not specified
-                              </span>
-                            )}
+                            <div className="font-medium flex items-center">
+                              <Building2 className="w-4 h-4 mr-2 text-gray-400" />
+                              {review.property.hostelName}
+                            </div>
+                            <div className="text-gray-500 text-xs">
+                              {review.property.hostelCity}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <StatusBadge
-                            isActive={landlord.user.isActive}
-                            isVerified={landlord.user.isVerified}
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Building2 className="w-4 h-4 mr-2 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-900">
-                              {landlord._count.properties}
-                            </span>
-                            <span className="text-sm text-gray-500 ml-1">
-                              {landlord._count.properties === 1
-                                ? "property"
-                                : "properties"}
-                            </span>
+                          <div className="flex flex-col items-start space-y-1">
+                            <StarRating rating={review.rating} size="sm" />
+                            <RatingBadge rating={review.rating} />
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900 flex items-center">
                             <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                            {formatDate(landlord.createdAt)}
+                            {formatDate(review.createdAt)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <ActionButtons landlordId={landlord.id} />
+                          <ActionButtons reviewId={review.id} />
                         </td>
                       </tr>
                     ))}
@@ -625,12 +701,15 @@ const Landlords: React.FC = () => {
             </>
           ) : (
             <div className="p-8 text-center">
-              <Crown className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No landlords found</p>
-              {(searchTerm || activeFilter !== undefined) && (
+              <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No reviews found</p>
+              {(searchTerm ||
+                ratingFilter > 0 ||
+                activeFilter !== undefined) && (
                 <button
                   onClick={() => {
                     setSearchTerm("");
+                    setRatingFilter(0);
                     setActiveFilter(undefined);
                   }}
                   className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
@@ -641,9 +720,51 @@ const Landlords: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Rating Distribution Chart */}
+        {reviews.length > 0 && (
+          <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Rating Distribution
+            </h3>
+            <div className="space-y-3">
+              {[5, 4, 3, 2, 1].map((rating) => {
+                const count =
+                  ratingDistribution[rating as keyof typeof ratingDistribution];
+                const percentage =
+                  reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+
+                return (
+                  <div key={rating} className="flex items-center">
+                    <div className="flex items-center w-16">
+                      <span className="text-sm font-medium text-gray-700 mr-1">
+                        {rating}
+                      </span>
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                    </div>
+                    <div className="flex-1 mx-4">
+                      <div className="bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="w-16 text-right">
+                      <span className="text-sm text-gray-600">
+                        {count} ({percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default Landlords;
+export default Reviews;

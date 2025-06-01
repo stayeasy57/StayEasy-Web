@@ -1,7 +1,12 @@
+import Reviews from "@/components/AdminPanel/Reviews";
 import React from "react";
 
-const Reviews = () => {
-  return <div>Reviews</div>;
+const ReviewsPage = () => {
+  return (
+    <div>
+      <Reviews />
+    </div>
+  );
 };
 
-export default Reviews;
+export default ReviewsPage;

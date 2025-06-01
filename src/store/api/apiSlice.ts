@@ -1,363 +1,35 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { AuthResponse, LoginRequest, SignupRequest } from "@/utils/types/auth";
 import { RootState } from "../store";
+import {
+  BookingDetailsResponse,
+  BookingsQueryParams,
+  BookingsResponse,
+  CreateBookingRequest,
+  CreateBookingResponse,
+  LandlordDetailsResponse,
+  LandlordsQueryParams,
+  LandlordsResponse,
+  PropertiesQueryParams,
+  PropertiesResponse,
+  PropertyResponse,
+  PublishPropertyRequest,
+  PublishPropertyResponse,
+  ReviewDetailsResponse,
+  ReviewsQueryParams,
+  ReviewsResponse,
+  TenantDetailsResponse,
+  TenantsQueryParams,
+  TenantsResponse,
+  UpdateBookingStatusRequest,
+  UpdateBookingStatusResponse,
+  UpdateReviewRequest,
+  UpdateReviewResponse,
+  UsersQueryParams,
+  UsersResponse,
+} from "@/utils/types";
 
 // Define interfaces for Users API
-interface User {
-  id: number;
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  address: string | null;
-  gender: string | null;
-  userType: string;
-  isActive: boolean;
-  isVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface UsersResponse {
-  statusCode: number;
-  message: string;
-  data: User[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-
-interface UsersQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean;
-}
-
-// Define interfaces for Landlords API
-interface Landlord {
-  id: number;
-  userId: number;
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: number;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    gender: string | null;
-    isActive: boolean;
-    isVerified: boolean;
-  };
-  _count: {
-    properties: number;
-  };
-}
-
-// Interface for single landlord details
-interface LandlordDetails {
-  id: number;
-  userId: number;
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: number;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    address: string | null;
-    gender: string | null;
-    isActive: boolean;
-    isVerified: boolean;
-    createdAt: string;
-  };
-  properties: Array<{
-    id: number;
-    landlordId: number;
-    ownerName: string;
-    ownerContact: string;
-    ownerEmail: string;
-    hostelName: string;
-    hostelAddress: string;
-    landmark: string;
-    hostelCity: string;
-    latLong: any[];
-    step: number;
-    accommodationType: string;
-    propertyGender: string;
-    idealFor: string;
-    description: string;
-    isProvidedFood: boolean;
-    mealProvided: string[];
-    foodType: string[];
-    roomFacilities: string[];
-    basicFacilities: string[];
-    otherFacilities: string[];
-    roomImages: string[];
-    messImages: string[];
-    washroomImages: string[];
-    otherImages: string[];
-    propertyDocuments: string[];
-    noticePeriodDays: number;
-    isDraft: boolean;
-    isCompleted: boolean;
-    isPublished: boolean;
-    totalBeds: number;
-    availableBeds: number;
-    totalViews: number;
-    uniqueViews: number;
-    createdAt: string;
-    updatedAt: string;
-    _count: {
-      bookings: number;
-      roomTypes: number;
-    };
-  }>;
-  bookings: any[];
-}
-
-interface LandlordsResponse {
-  statusCode: number;
-  message: string;
-  data: Landlord[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-
-interface LandlordDetailsResponse {
-  statusCode: number;
-  message: string;
-  data: LandlordDetails;
-}
-
-interface LandlordsQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean;
-}
-
-// Define interfaces for Tenants API
-interface Tenant {
-  id: number;
-  userId: number;
-  fatherName: string;
-  fatherContact: string;
-  fatherOccupation: string;
-  motherName: string;
-  motherContact: string;
-  motherOccupation: string;
-  instituteOrOfficeName: string;
-  tenantName: string | null;
-  tenantEmail: string | null;
-  universityOrOffice: string | null;
-  semesterOrDesignation: string | null;
-  instituteOrOfficeAddress: string;
-  documents: any[];
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: number;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    gender: string | null;
-    isActive: boolean;
-    isVerified: boolean;
-  };
-  _count: {
-    bookings: number;
-  };
-}
-
-// Interface for single tenant details
-interface TenantDetails {
-  id: number;
-  userId: number;
-  fatherName: string;
-  fatherContact: string;
-  fatherOccupation: string;
-  motherName: string;
-  motherContact: string;
-  motherOccupation: string;
-  instituteOrOfficeName: string;
-  tenantName: string | null;
-  tenantEmail: string | null;
-  universityOrOffice: string | null;
-  semesterOrDesignation: string | null;
-  instituteOrOfficeAddress: string;
-  documents: any[];
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    id: number;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    address: string | null;
-    gender: string | null;
-    isActive: boolean;
-    isVerified: boolean;
-    createdAt: string;
-  };
-  bookings: any[];
-  reviews: any[];
-}
-
-interface TenantsResponse {
-  statusCode: number;
-  message: string;
-  data: Tenant[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-
-interface TenantDetailsResponse {
-  statusCode: number;
-  message: string;
-  data: TenantDetails;
-}
-
-interface TenantsQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean;
-}
-
-// Define interfaces for Properties API
-interface Property {
-  id: number;
-  landlordId: number;
-  ownerName: string;
-  ownerContact: string;
-  ownerEmail: string;
-  hostelName: string;
-  hostelAddress: string;
-  landmark: string;
-  hostelCity: string;
-  latLong: any[];
-  step: number;
-  accommodationType: string;
-  propertyGender: string;
-  idealFor: string;
-  description: string | null;
-  isProvidedFood: boolean;
-  mealProvided: string[];
-  foodType: string[];
-  roomFacilities: string[];
-  basicFacilities: string[];
-  otherFacilities: string[];
-  roomImages: any[];
-  messImages: any[];
-  washroomImages: any[];
-  roomTypes?: any[];
-  reviews?: any[];
-  bookings?: any[];
-  otherImages: any[];
-  noticePeriodDays: number | null;
-  isDraft: boolean;
-  isCompleted: boolean;
-  isPublished: boolean;
-  totalBeds: number;
-  availableBeds: number;
-  createdAt: string;
-  updatedAt: string;
-  landlord: {
-    id: number;
-    userId: number;
-    createdAt: string;
-    updatedAt: string;
-    user: {
-      fullName: string;
-      email: string;
-      phoneNumber: string;
-    };
-  };
-  _count: {
-    roomTypes: number;
-    bookings: number;
-    reviews: number;
-  };
-}
-
-interface PropertiesResponse {
-  statusCode: number;
-  message: string;
-  data: Property[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-
-interface PropertyResponse {
-  statusCode: number;
-  message: string;
-  data: Property;
-}
-
-interface PropertiesQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  isActive?: boolean;
-  accommodationType?: string;
-  isPublished?: boolean;
-  isDraft?: boolean;
-}
-
-// Interface for publish property request
-interface PublishPropertyRequest {
-  id: string | number;
-  isPublished: boolean;
-}
-
-// Interface for publish property response
-interface PublishPropertyResponse {
-  statusCode: number;
-  message: string;
-  data?: any;
-}
-
-// Define interfaces for Booking API
-interface CreateBookingRequest {
-  propertyId: number;
-  roomTypeId: number;
-  checkInDate: string; // Format: "YYYY-MM-DD"
-  checkOutDate: string; // Format: "YYYY-MM-DD"
-  numberOfBeds: number;
-  tenantName: string;
-  tenantEmail: string;
-  universityOrOffice: string;
-  semesterOrDesignation: string;
-}
-
-interface CreateBookingResponse {
-  statusCode: number;
-  message: string;
-  data?: any;
-}
 
 // Define our API with endpoints
 export const authApi = createApi({
@@ -378,7 +50,15 @@ export const authApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Users", "Landlords", "Tenants", "Properties", "Property", "Bookings"], // Add Landlords tag type for caching
+  tagTypes: [
+    "Users",
+    "Landlords",
+    "Tenants",
+    "Properties",
+    "Property",
+    "Bookings",
+    "Reviews",
+  ], // Add Reviews tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -584,6 +264,121 @@ export const authApi = createApi({
       ],
     }),
 
+    // Bookings API endpoint for Admin
+    getBookings: builder.query<BookingsResponse, BookingsQueryParams>({
+      query: (params = {}) => {
+        const {
+          page = 1,
+          limit = 10,
+          search,
+          bookingStatus,
+          paymentStatus,
+          isBookingAccepted,
+        } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (bookingStatus && bookingStatus !== "all") {
+          searchParams.append("bookingStatus", bookingStatus);
+        }
+
+        if (paymentStatus && paymentStatus !== "all") {
+          searchParams.append("paymentStatus", paymentStatus);
+        }
+
+        if (isBookingAccepted !== undefined) {
+          searchParams.append(
+            "isBookingAccepted",
+            isBookingAccepted.toString()
+          );
+        }
+
+        return `/admin/bookings?${searchParams.toString()}`;
+      },
+      providesTags: ["Bookings"],
+    }),
+
+    // Single Booking API endpoint for Admin
+    getBookingById: builder.query<BookingDetailsResponse, string | number>({
+      query: (id) => `/admin/bookings/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Bookings", id },
+        { type: "Bookings", id: "LIST" },
+      ],
+    }),
+
+    // Reviews API endpoint for Admin
+    getReviews: builder.query<ReviewsResponse, ReviewsQueryParams>({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, isActive, rating } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        if (rating !== undefined && rating > 0) {
+          searchParams.append("rating", rating.toString());
+        }
+
+        return `/admin/reviews?${searchParams.toString()}`;
+      },
+      providesTags: ["Reviews"],
+    }),
+
+    // Single Review API endpoint for Admin
+    getReviewById: builder.query<ReviewDetailsResponse, string | number>({
+      query: (id) => `/admin/reviews/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Reviews", id },
+        { type: "Reviews", id: "LIST" },
+      ],
+    }),
+
+    // Update Review API endpoint for Admin
+    updateReview: builder.mutation<UpdateReviewResponse, UpdateReviewRequest>({
+      query: ({ id, ...updateData }) => ({
+        url: `/admin/reviews/${id}`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Reviews", id },
+        { type: "Reviews", id: "LIST" },
+        "Reviews",
+      ],
+    }),
+    updateBookingStatus: builder.mutation<
+      UpdateBookingStatusResponse,
+      UpdateBookingStatusRequest
+    >({
+      query: ({ id, ...updateData }) => ({
+        url: `/admin/bookings/${id}/status`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Bookings", id },
+        { type: "Bookings", id: "LIST" },
+        "Bookings",
+      ],
+    }),
+
     // For checking if the current token is valid
     getCurrentUser: builder.query<AuthResponse, void>({
       query: () => "/auth/me",
@@ -609,6 +404,15 @@ export const {
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
   usePublishPropertyMutation,
+  // BOOKINGS ADMIN
+  useGetBookingsQuery, // New hook for bookings
+  useGetBookingByIdQuery, // New hook for single booking
+  useUpdateBookingStatusMutation, // New hook for updating booking status
+
+  // REVIEWS ADMIN
+  useGetReviewsQuery, // New hook for reviews
+  useGetReviewByIdQuery, // New hook for single review
+  useUpdateReviewMutation, // New hook for updating review
 
   useGetPropertyQuery,
   useGetCurrentUserQuery,

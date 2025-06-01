@@ -2,13 +2,11 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useGetLandlordsQuery } from "@/store/api/apiSlice";
+import { useGetBookingsQuery } from "@/store/api/apiSlice";
 import {
-  Users,
-  Mail,
-  Phone,
   Calendar,
-  Shield,
+  CreditCard,
+  Clock,
   CheckCircle,
   XCircle,
   Eye,
@@ -25,35 +23,90 @@ import {
   Home,
   Building2,
   UserCheck,
-  Crown,
+  BookOpen,
+  DollarSign,
+  MapPin,
+  User,
+  Phone,
+  Mail,
+  CalendarDays,
+  Badge,
+  Clock3,
+  Ban,
+  CheckCheck,
 } from "lucide-react";
 
-interface LandlordType {
+interface BookingType {
   id: number;
-  userId: number;
+  propertyId: number;
+  roomTypeId: number;
+  tenantId: number;
+  landlordId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  bookingStatus: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "FAILED";
+  isBookingAccepted: boolean;
+  rentAmount: number;
+  securityDeposit: number;
+  totalBill: number;
+  numberOfBeds: number;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
   createdAt: string;
   updatedAt: string;
-  user: {
+  property: {
     id: number;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    gender: string | null;
-    isActive: boolean;
-    isVerified: boolean;
+    hostelName: string;
+    hostelCity: string;
   };
-  _count: {
-    properties: number;
+  roomType: {
+    occupancyType: string;
+    rentAmount: number;
+  };
+  tenant: {
+    id: number;
+    userId: number;
+    fatherName: string;
+    fatherContact: string;
+    fatherOccupation: string;
+    motherName: string;
+    motherContact: string;
+    motherOccupation: string;
+    instituteOrOfficeName: string;
+    tenantName: string;
+    tenantEmail: string;
+    universityOrOffice: string;
+    semesterOrDesignation: string;
+    instituteOrOfficeAddress: string;
+    documents: any[];
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      fullName: string;
+      phoneNumber: string;
+    };
+  };
+  landlord: {
+    id: number;
+    userId: number;
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      fullName: string;
+    };
   };
 }
 
-const Landlords: React.FC = () => {
+const Bookings: React.FC = () => {
   const router = useRouter();
   // State for pagination and filtering
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState<boolean | undefined>(
+  const [bookingStatusFilter, setBookingStatusFilter] = useState<string>("all");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
+  const [acceptedFilter, setAcceptedFilter] = useState<boolean | undefined>(
     undefined
   );
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -68,23 +121,25 @@ const Landlords: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch landlords with RTK Query
+  // Fetch bookings with RTK Query
   const {
-    data: landlordsDataApi,
+    data: bookingsDataApi,
     isLoading,
     isError,
     error,
     refetch,
-  } = useGetLandlordsQuery({
+  } = useGetBookingsQuery({
     page: currentPage,
     limit: pageSize,
     search: debouncedSearch,
-    isActive: activeFilter,
+    bookingStatus: bookingStatusFilter,
+    paymentStatus: paymentStatusFilter,
+    isBookingAccepted: acceptedFilter,
   });
 
-  // Handle landlord row click
-  const handleLandlordClick = (landlordId: number) => {
-    router.push(`/admin/landlords/${landlordId}`);
+  // Handle booking row click
+  const handleBookingClick = (bookingId: number) => {
+    router.push(`/admin/bookings/${bookingId}`);
   };
 
   // Format date helper
@@ -98,51 +153,128 @@ const Landlords: React.FC = () => {
     });
   };
 
+  // Format currency helper
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "PKR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
+
   // Status badge component
-  const StatusBadge = ({
-    isActive,
-    isVerified,
-  }: {
-    isActive: boolean;
-    isVerified: boolean;
-  }) => (
-    <div className="flex space-x-1">
+  const BookingStatusBadge = ({ status }: { status: string }) => {
+    const getStatusConfig = (status: string) => {
+      switch (status) {
+        case "PENDING":
+          return {
+            color: "bg-yellow-100 text-yellow-800",
+            icon: Clock3,
+          };
+        case "CONFIRMED":
+          return {
+            color: "bg-green-100 text-green-800",
+            icon: CheckCircle,
+          };
+        case "CANCELLED":
+          return {
+            color: "bg-red-100 text-red-800",
+            icon: Ban,
+          };
+        case "COMPLETED":
+          return {
+            color: "bg-blue-100 text-blue-800",
+            icon: CheckCheck,
+          };
+        default:
+          return {
+            color: "bg-gray-100 text-gray-800",
+            icon: Clock3,
+          };
+      }
+    };
+
+    const config = getStatusConfig(status);
+    const Icon = config.icon;
+
+    return (
       <span
-        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-          isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-        }`}
+        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${config.color}`}
       >
-        {isActive ? (
-          <CheckCircle className="w-3 h-3 mr-1" />
-        ) : (
-          <XCircle className="w-3 h-3 mr-1" />
-        )}
-        {isActive ? "Active" : "Inactive"}
+        <Icon className="w-3 h-3 mr-1" />
+        {status}
       </span>
+    );
+  };
+
+  // Payment status badge component
+  const PaymentStatusBadge = ({ status }: { status: string }) => {
+    const getStatusConfig = (status: string) => {
+      switch (status) {
+        case "PENDING":
+          return {
+            color: "bg-yellow-100 text-yellow-800",
+            icon: Clock,
+          };
+        case "PAID":
+          return {
+            color: "bg-green-100 text-green-800",
+            icon: CheckCircle,
+          };
+        case "REFUNDED":
+          return {
+            color: "bg-blue-100 text-blue-800",
+            icon: RefreshCw,
+          };
+        case "FAILED":
+          return {
+            color: "bg-red-100 text-red-800",
+            icon: XCircle,
+          };
+        default:
+          return {
+            color: "bg-gray-100 text-gray-800",
+            icon: Clock,
+          };
+      }
+    };
+
+    const config = getStatusConfig(status);
+    const Icon = config.icon;
+
+    return (
       <span
-        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-          isVerified
-            ? "bg-blue-100 text-blue-800"
-            : "bg-yellow-100 text-yellow-800"
-        }`}
+        className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${config.color}`}
       >
-        {isVerified ? (
-          <CheckCircle className="w-3 h-3 mr-1" />
-        ) : (
-          <XCircle className="w-3 h-3 mr-1" />
-        )}
-        {isVerified ? "Verified" : "Pending"}
+        <Icon className="w-3 h-3 mr-1" />
+        {status}
       </span>
-    </div>
+    );
+  };
+
+  // Acceptance badge component
+  const AcceptanceBadge = ({ isAccepted }: { isAccepted: boolean }) => (
+    <span
+      className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+        isAccepted ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+      }`}
+    >
+      {isAccepted ? (
+        <CheckCircle className="w-3 h-3 mr-1" />
+      ) : (
+        <Clock className="w-3 h-3 mr-1" />
+      )}
+      {isAccepted ? "Accepted" : "Pending"}
+    </span>
   );
 
   // Action buttons component
-  const ActionButtons = ({ landlordId }: { landlordId: number }) => (
+  const ActionButtons = ({ bookingId }: { bookingId: number }) => (
     <div className="flex items-center space-x-2">
       <button
         onClick={(e) => {
           e.stopPropagation();
-          handleLandlordClick(landlordId);
+          handleBookingClick(bookingId);
         }}
         className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
         title="View Details"
@@ -152,14 +284,14 @@ const Landlords: React.FC = () => {
       <button
         onClick={(e) => e.stopPropagation()}
         className="p-1 text-gray-400 hover:text-green-600 transition-colors"
-        title="Edit Landlord"
+        title="Edit Booking"
       >
         <Edit className="w-4 h-4" />
       </button>
       <button
         onClick={(e) => e.stopPropagation()}
         className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-        title="Delete Landlord"
+        title="Cancel Booking"
       >
         <Trash2 className="w-4 h-4" />
       </button>
@@ -184,12 +316,22 @@ const Landlords: React.FC = () => {
     setCurrentPage(1);
   };
 
-  // Handle filter change
-  const handleActiveFilterChange = (value: string) => {
+  // Handle filter changes
+  const handleBookingStatusChange = (value: string) => {
+    setBookingStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handlePaymentStatusChange = (value: string) => {
+    setPaymentStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleAcceptedFilterChange = (value: string) => {
     if (value === "all") {
-      setActiveFilter(undefined);
+      setAcceptedFilter(undefined);
     } else {
-      setActiveFilter(value === "true");
+      setAcceptedFilter(value === "true");
     }
     setCurrentPage(1);
   };
@@ -232,9 +374,9 @@ const Landlords: React.FC = () => {
 
   // Pagination component
   const Pagination = () => {
-    if (!landlordsDataApi?.pagination) return null;
+    if (!bookingsDataApi?.pagination) return null;
 
-    const { pagination } = landlordsDataApi;
+    const { pagination } = bookingsDataApi;
     const totalPages = pagination.totalPages;
     const currentPageNum = pagination.page;
 
@@ -324,7 +466,7 @@ const Landlords: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="p-8 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-        <p className="text-gray-600">Loading landlords...</p>
+        <p className="text-gray-600">Loading bookings...</p>
       </div>
     </div>
   );
@@ -335,7 +477,7 @@ const Landlords: React.FC = () => {
       <div className="p-8 text-center">
         <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-4" />
         <p className="text-gray-900 font-semibold mb-2">
-          Failed to load landlords
+          Failed to load bookings
         </p>
         <p className="text-gray-600 mb-4">
           {(error as any)?.data?.message ||
@@ -375,14 +517,14 @@ const Landlords: React.FC = () => {
     );
   }
 
-  const landlords = landlordsDataApi?.data || [];
-  const pagination = landlordsDataApi?.pagination;
+  const bookings = bookingsDataApi?.data || [];
+  const pagination = bookingsDataApi?.pagination;
 
   return (
-    <div className=" bg-gray-50 p-6">
+    <div className=" bg-gray-50 ">
       <div className="">
         {/* Header with Search and Filters */}
-        <div className="mb-8">
+        <div className="mb-8 px-6 pt-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             {/* Search and Filter Controls */}
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
@@ -391,28 +533,59 @@ const Landlords: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search by name, email..."
+                  placeholder="Search by tenant, property..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
                 />
               </div>
 
-              {/* Active Filter */}
+              {/* Booking Status Filter */}
               <div className="flex items-center space-x-2">
                 <Filter className="text-gray-400 w-4 h-4" />
                 <select
-                  value={
-                    activeFilter === undefined ? "all" : activeFilter.toString()
-                  }
-                  onChange={(e) => handleActiveFilterChange(e.target.value)}
+                  value={bookingStatusFilter}
+                  onChange={(e) => handleBookingStatusChange(e.target.value)}
                   className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="all">All Landlords</option>
-                  <option value="true">Active Only</option>
-                  <option value="false">Inactive Only</option>
+                  <option value="all">All Status</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="CANCELLED">Cancelled</option>
+                  <option value="COMPLETED">Completed</option>
                 </select>
               </div>
+
+              {/* Payment Status Filter */}
+              <div className="flex items-center space-x-2">
+                <CreditCard className="text-gray-400 w-4 h-4" />
+                <select
+                  value={paymentStatusFilter}
+                  onChange={(e) => handlePaymentStatusChange(e.target.value)}
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Payments</option>
+                  <option value="PENDING">Payment Pending</option>
+                  <option value="PAID">Paid</option>
+                  <option value="REFUNDED">Refunded</option>
+                  <option value="FAILED">Failed</option>
+                </select>
+              </div>
+
+              {/* Acceptance Filter */}
+              <select
+                value={
+                  acceptedFilter === undefined
+                    ? "all"
+                    : acceptedFilter.toString()
+                }
+                onChange={(e) => handleAcceptedFilterChange(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">All Bookings</option>
+                <option value="true">Accepted Only</option>
+                <option value="false">Pending Only</option>
+              </select>
 
               <button
                 onClick={() => refetch()}
@@ -423,25 +596,25 @@ const Landlords: React.FC = () => {
               </button>
             </div>
 
-            {/* Add Landlord Button */}
+            {/* Add Booking Button */}
             <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
-              <Crown className="w-4 h-4" />
-              <span>Add Landlord</span>
+              <BookOpen className="w-4 h-4" />
+              <span>Add Booking</span>
             </button>
           </div>
         </div>
 
         {/* Stats Cards */}
         {pagination && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 px-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
-                  <Crown className="w-6 h-6 text-blue-600" />
+                  <BookOpen className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Total Landlords
+                    Total Bookings
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {pagination.total}
@@ -456,13 +629,12 @@ const Landlords: React.FC = () => {
                   <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">
-                    Active Landlords
-                  </p>
+                  <p className="text-sm font-medium text-gray-600">Confirmed</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {
-                      landlords.filter((landlord) => landlord.user.isActive)
-                        .length
+                      bookings.filter(
+                        (booking) => booking.bookingStatus === "CONFIRMED"
+                      ).length
                     }
                   </p>
                 </div>
@@ -471,15 +643,16 @@ const Landlords: React.FC = () => {
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <UserCheck className="w-6 h-6 text-purple-600" />
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Clock className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Verified</p>
+                  <p className="text-sm font-medium text-gray-600">Pending</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {
-                      landlords.filter((landlord) => landlord.user.isVerified)
-                        .length
+                      bookings.filter(
+                        (booking) => booking.bookingStatus === "PENDING"
+                      ).length
                     }
                   </p>
                 </div>
@@ -488,17 +661,17 @@ const Landlords: React.FC = () => {
 
             <div className="bg-white rounded-lg shadow-sm border-gray-200 border p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Building2 className="w-6 h-6 text-orange-600" />
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <DollarSign className="w-6 h-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    With Properties
+                    Paid Bookings
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
                     {
-                      landlords.filter(
-                        (landlord) => landlord._count.properties > 0
+                      bookings.filter(
+                        (booking) => booking.paymentStatus === "PAID"
                       ).length
                     }
                   </p>
@@ -509,30 +682,30 @@ const Landlords: React.FC = () => {
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {landlords.length > 0 ? (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ">
+          {bookings.length > 0 ? (
             <>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Landlord
+                        Booking Details
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Contact
+                        Tenant
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Gender
+                        Property
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Dates
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Amount
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Properties
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -540,79 +713,115 @@ const Landlords: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {landlords.map((landlord) => (
+                    {bookings.map((booking) => (
                       <tr
-                        key={landlord.id}
-                        onClick={() => handleLandlordClick(landlord.id)}
+                        key={booking.id}
+                        onClick={() => handleBookingClick(booking.id)}
                         className="hover:bg-gray-50 transition-colors cursor-pointer"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                               <span className="text-white font-semibold text-sm">
-                                {landlord.user.fullName.charAt(0).toUpperCase()}
+                                {booking.id}
                               </span>
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {landlord.user.fullName}
+                                Booking #{booking.id}
                               </div>
-                              <div className="text-sm text-gray-500">
-                                ID: {landlord.id} • User ID: {landlord.userId}
+                              <div className="text-sm text-gray-500 flex items-center">
+                                <Badge className="w-3 h-3 mr-1" />
+                                {booking.roomType.occupancyType} •{" "}
+                                {booking.numberOfBeds} bed
+                                {booking.numberOfBeds > 1 ? "s" : ""}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 flex items-center">
-                            <Mail className="w-4 h-4 mr-2 text-gray-400" />
-                            {landlord.user.email}
-                          </div>
-                          <div className="text-sm text-gray-500 flex items-center mt-1">
-                            <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                            {landlord.user.phoneNumber}
+                          <div className="text-sm text-gray-900">
+                            <div className="font-medium flex items-center">
+                              <User className="w-4 h-4 mr-2 text-gray-400" />
+                              {booking.tenant.user.fullName}
+                            </div>
+                            <div className="text-gray-500 flex items-center mt-1">
+                              <Phone className="w-3 h-3 mr-1 text-gray-400" />
+                              {booking.tenant.user.phoneNumber}
+                            </div>
+                            <div className="text-gray-500 flex items-center mt-1">
+                              <Mail className="w-3 h-3 mr-1 text-gray-400" />
+                              {booking.tenant.tenantEmail}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {landlord.user.gender ? (
-                              <span className="capitalize">
-                                {landlord.user.gender}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 italic">
-                                Not specified
-                              </span>
-                            )}
+                            <div className="font-medium flex items-center">
+                              <Building2 className="w-4 h-4 mr-2 text-gray-400" />
+                              {booking.property.hostelName}
+                            </div>
+                            <div className="text-gray-500 flex items-center mt-1">
+                              <MapPin className="w-3 h-3 mr-1 text-gray-400" />
+                              {booking.property.hostelCity}
+                            </div>
+                            <div className="text-gray-500 text-xs mt-1">
+                              Owner: {booking.landlord.user.fullName}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <StatusBadge
-                            isActive={landlord.user.isActive}
-                            isVerified={landlord.user.isVerified}
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Building2 className="w-4 h-4 mr-2 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-900">
-                              {landlord._count.properties}
-                            </span>
-                            <span className="text-sm text-gray-500 ml-1">
-                              {landlord._count.properties === 1
-                                ? "property"
-                                : "properties"}
-                            </span>
+                          <div className="text-sm text-gray-900">
+                            <div className="flex items-center">
+                              <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />
+                              <div>
+                                <div className="font-medium">
+                                  {new Date(
+                                    booking.checkInDate
+                                  ).toLocaleDateString()}
+                                </div>
+                                <div className="text-gray-500 text-xs">
+                                  to{" "}
+                                  {new Date(
+                                    booking.checkOutDate
+                                  ).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-gray-500 text-xs mt-1">
+                              Created: {formatDate(booking.createdAt)}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 flex items-center">
-                            <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                            {formatDate(landlord.createdAt)}
+                          <div className="text-sm text-gray-900">
+                            <div className="font-medium flex items-center">
+                              <DollarSign className="w-4 h-4 mr-1 text-gray-400" />
+                              {formatCurrency(booking.totalBill)}
+                            </div>
+                            <div className="text-gray-500 text-xs">
+                              Rent: {formatCurrency(booking.rentAmount)}
+                            </div>
+                            <div className="text-gray-500 text-xs">
+                              Deposit: {formatCurrency(booking.securityDeposit)}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="space-y-1">
+                            <BookingStatusBadge
+                              status={booking.bookingStatus}
+                            />
+                            <PaymentStatusBadge
+                              status={booking.paymentStatus}
+                            />
+                            <AcceptanceBadge
+                              isAccepted={booking.isBookingAccepted}
+                            />
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <ActionButtons landlordId={landlord.id} />
+                          <ActionButtons bookingId={booking.id} />
                         </td>
                       </tr>
                     ))}
@@ -625,13 +834,18 @@ const Landlords: React.FC = () => {
             </>
           ) : (
             <div className="p-8 text-center">
-              <Crown className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No landlords found</p>
-              {(searchTerm || activeFilter !== undefined) && (
+              <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No bookings found</p>
+              {(searchTerm ||
+                bookingStatusFilter !== "all" ||
+                paymentStatusFilter !== "all" ||
+                acceptedFilter !== undefined) && (
                 <button
                   onClick={() => {
                     setSearchTerm("");
-                    setActiveFilter(undefined);
+                    setBookingStatusFilter("all");
+                    setPaymentStatusFilter("all");
+                    setAcceptedFilter(undefined);
                   }}
                   className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
                 >
@@ -646,4 +860,4 @@ const Landlords: React.FC = () => {
   );
 };
 
-export default Landlords;
+export default Bookings;
