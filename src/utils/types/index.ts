@@ -460,3 +460,82 @@ export interface UpdateBookingStatusResponse {
   message: string;
   data?: any;
 }
+
+export interface ReviewType {
+  id: number;
+  propertyId: number;
+  tenantId: number;
+  bookingId: number;
+  rating: number;
+  review: string;
+  createdAt: string;
+  updatedAt: string;
+  property: {
+    id: number;
+    hostelName: string;
+    hostelCity: string;
+  };
+  tenant: {
+    id: number;
+    userId: number;
+    fatherName: string;
+    fatherContact: string;
+    fatherOccupation: string;
+    motherName: string;
+    motherContact: string;
+    motherOccupation: string;
+    instituteOrOfficeName: string;
+    tenantName: string;
+    tenantEmail: string;
+    universityOrOffice: string;
+    semesterOrDesignation: string;
+    instituteOrOfficeAddress: string;
+    documents: any[];
+    createdAt: string;
+    updatedAt: string;
+    user: {
+      fullName: string;
+    };
+  };
+}
+
+export interface ReviewsResponse {
+  statusCode: number;
+  message: string;
+  data: ReviewType[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+export interface ReviewDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: ReviewType;
+}
+
+export interface ReviewsQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+  rating?: number;
+}
+
+// Update review interface
+export interface UpdateReviewRequest {
+  id: string | number;
+  isActive?: boolean;
+  moderationStatus?: string;
+}
+
+export interface UpdateReviewResponse {
+  statusCode: number;
+  message: string;
+  data?: any;
+}

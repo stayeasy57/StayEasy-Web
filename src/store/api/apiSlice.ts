@@ -15,11 +15,16 @@ import {
   PropertyResponse,
   PublishPropertyRequest,
   PublishPropertyResponse,
+  ReviewDetailsResponse,
+  ReviewsQueryParams,
+  ReviewsResponse,
   TenantDetailsResponse,
   TenantsQueryParams,
   TenantsResponse,
   UpdateBookingStatusRequest,
   UpdateBookingStatusResponse,
+  UpdateReviewRequest,
+  UpdateReviewResponse,
   UsersQueryParams,
   UsersResponse,
 } from "@/utils/types";
@@ -52,7 +57,8 @@ export const authApi = createApi({
     "Properties",
     "Property",
     "Bookings",
-  ], // Add Landlords tag type for caching
+    "Reviews",
+  ], // Add Reviews tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -308,7 +314,55 @@ export const authApi = createApi({
       ],
     }),
 
-    // Update Booking Status API endpoint for Admin
+    // Reviews API endpoint for Admin
+    getReviews: builder.query<ReviewsResponse, ReviewsQueryParams>({
+      query: (params = {}) => {
+        const { page = 1, limit = 10, search, isActive, rating } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        if (rating !== undefined && rating > 0) {
+          searchParams.append("rating", rating.toString());
+        }
+
+        return `/admin/reviews?${searchParams.toString()}`;
+      },
+      providesTags: ["Reviews"],
+    }),
+
+    // Single Review API endpoint for Admin
+    getReviewById: builder.query<ReviewDetailsResponse, string | number>({
+      query: (id) => `/admin/reviews/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "Reviews", id },
+        { type: "Reviews", id: "LIST" },
+      ],
+    }),
+
+    // Update Review API endpoint for Admin
+    updateReview: builder.mutation<UpdateReviewResponse, UpdateReviewRequest>({
+      query: ({ id, ...updateData }) => ({
+        url: `/admin/reviews/${id}`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Reviews", id },
+        { type: "Reviews", id: "LIST" },
+        "Reviews",
+      ],
+    }),
     updateBookingStatus: builder.mutation<
       UpdateBookingStatusResponse,
       UpdateBookingStatusRequest
@@ -354,6 +408,11 @@ export const {
   useGetBookingsQuery, // New hook for bookings
   useGetBookingByIdQuery, // New hook for single booking
   useUpdateBookingStatusMutation, // New hook for updating booking status
+
+  // REVIEWS ADMIN
+  useGetReviewsQuery, // New hook for reviews
+  useGetReviewByIdQuery, // New hook for single review
+  useUpdateReviewMutation, // New hook for updating review
 
   useGetPropertyQuery,
   useGetCurrentUserQuery,
