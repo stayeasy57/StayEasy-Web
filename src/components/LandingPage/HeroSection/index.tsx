@@ -2,6 +2,7 @@
 
 import { Building, Clock, Home, MapPin, Search, Shield, Star } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import LocationSearch from "./LocationSearch";
 
 
 
@@ -27,6 +28,8 @@ const HeroSection = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-[#003B95]/10 to-blue-400/10 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-[#003B95]/5 to-blue-300/5 rounded-full blur-3xl"></div>
       </div>
+
+      
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-200px)]">
@@ -66,32 +69,11 @@ const HeroSection = () => {
               </p>
             </div>
 
+            {/* Download App Buttons */}
+
+
             {/* Search Bar */}
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2 max-w-2xl mx-auto lg:mx-0">
-                <div className="flex items-center">
-                  <div className="flex-1 flex items-center space-x-3 px-4">
-                    <MapPin className="w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search for Hostels, PGs, Hotels, Apartments..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full py-4 outline-none text-gray-700 placeholder-gray-400 text-base"
-                    />
-                  </div>
-                  <button
-                    onClick={handleSearch}
-                    className="bg-gradient-to-r from-[#003B95] to-[#0056D6] text-white px-8 py-4 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
-                  >
-                    <Search className="w-5 h-5" />
-                    <span>Search</span>
-                  </button>
-                </div>
-              </div>
-              
-      
-            </div>
+           <LocationSearch />
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 pt-8 max-w-md mx-auto lg:mx-0">
