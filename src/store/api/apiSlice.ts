@@ -5,6 +5,7 @@ import {
   BookingDetailsResponse,
   BookingsQueryParams,
   BookingsResponse,
+  ContactUsDetailsResponse,
   ContactUsRequest,
   ContactUsResponse,
   ContactUsStatisticsResponse,
@@ -81,14 +82,14 @@ export interface ContactUsListQueryParams {
   endDate?: string;
 }
 
-export interface UpdateContactUsRequest {
+export interface UpdateReadContactStatusRequest {
   id: number;
   status?: string;
   adminResponse?: string;
   isRead?: boolean;
 }
 
-export interface UpdateContactUsResponse {
+export interface UpdateReadContactStatusResponse {
   statusCode: number;
   message: string;
   data: ContactUsItem;
@@ -170,7 +171,10 @@ export const authApi = createApi({
     }),
 
     // Get Contact Us List - NEW ENDPOINT
-    getContactUsList: builder.query<ContactUsListResponse, ContactUsListQueryParams>({
+    getContactUsList: builder.query<
+      ContactUsListResponse,
+      ContactUsListQueryParams
+    >({
       query: (params = {}) => {
         const {
           page = 1,
@@ -222,10 +226,21 @@ export const authApi = createApi({
       providesTags: ["ContactUsList"],
     }),
 
+    getContactUsById: builder.query<ContactUsDetailsResponse, string | number>({
+      query: (id) => `/admin/contact-us/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "ContactUsList", id },
+        { type: "ContactUsList", id: "LIST" },
+      ],
+    }),
+
     // Update Contact Us - NEW ENDPOINT
-    updateContactUs: builder.mutation<UpdateContactUsResponse, UpdateContactUsRequest>({
+    UpdateReadContactStatus: builder.mutation<
+      UpdateReadContactStatusResponse,
+      UpdateReadContactStatusRequest
+    >({
       query: ({ id, ...updateData }) => ({
-        url: `/admin/contact-us/${id}`,
+        url: `/admin/contact-us/${id}/read-status`,
         method: "PATCH",
         body: updateData,
       }),
@@ -544,9 +559,10 @@ export const {
   useGetPropertiesQuery,
   // CONTACT US
   useSubmitContactFormMutation,
+  useGetContactUsByIdQuery,
   useGetContactUsStatisticsQuery,
   useGetContactUsListQuery, // NEW HOOK for contact us list
-  useUpdateContactUsMutation, // NEW HOOK for updating contact us
+  useUpdateReadContactStatusMutation, // NEW HOOK for updating contact us
   // BOOKING
   useCreateBookingMutation,
   // ADMIN

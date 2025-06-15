@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useGetContactUsListQuery,
-  useUpdateContactUsMutation,
+  useUpdateReadContactStatusMutation,
   ContactUsItem,
   ContactUsListQueryParams,
 } from "@/store/api/apiSlice";
@@ -90,14 +90,13 @@ const ContactUsList: React.FC = () => {
   });
 
   // Update contact mutation
-  const [updateContact, { isLoading: isUpdating }] = useUpdateContactUsMutation();
+  const [updateContact, { isLoading: isUpdating }] = useUpdateReadContactStatusMutation();
 
-  // Handle contact click to view details
+  // Handle contact click to navigate to details page
   const handleContactClick = (contact: ContactUsItem) => {
-    setSelectedContact(contact);
-    if (!contact.isRead) {
-      handleMarkAsRead(contact.id);
-    }
+    // Navigate to the details page
+    handleMarkAsRead(contact.id);
+    router.push(`/admin/support/${contact.id}`);
   };
 
   // Handle mark as read
@@ -283,7 +282,7 @@ const ContactUsList: React.FC = () => {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          handleContactClick(contact);
+          router.push(`/admin/contact-us/${contact.id}`);
         }}
         className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
         title="View Details"
@@ -297,7 +296,7 @@ const ContactUsList: React.FC = () => {
           setShowResponseModal(true);
         }}
         className="p-1 text-gray-400 hover:text-green-600 transition-colors"
-        title="Send Response"
+        title="Quick Response"
       >
         <Send className="w-4 h-4" />
       </button>
@@ -539,193 +538,7 @@ const ContactUsList: React.FC = () => {
     </div>
   );
 
-  // Contact details modal
-  const ContactDetailsModal = () => {
-    if (!selectedContact) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Contact Details - #{selectedContact.id}
-              </h2>
-              <button
-                onClick={() => setSelectedContact(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Contact Information */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Contact Information
-                </h3>
-
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <User className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedContact.firstName} {selectedContact.lastName}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Mail className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        {selectedContact.email}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        {selectedContact.phoneNumber}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="w-5 h-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-900">
-                        {formatDate(selectedContact.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Status Information */}
-                <div className="pt-4">
-                  <h4 className="text-md font-medium text-gray-900 mb-3">
-                    Status & Priority
-                  </h4>
-                  <div className="space-y-2">
-                    <StatusBadge status={selectedContact.status} />
-                    <PriorityBadge priority={selectedContact.priority} />
-                    <CategoryBadge category={selectedContact.category} />
-                    {!selectedContact.isRead && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        Unread
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Technical Information */}
-                <div className="pt-4">
-                  <h4 className="text-md font-medium text-gray-900 mb-3">
-                    Technical Details
-                  </h4>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>IP: {selectedContact.ipAddress}</span>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <Monitor className="w-4 h-4 mt-0.5" />
-                      <span className="break-all">
-                        {selectedContact.userAgent}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Message Content */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Message Details
-                </h3>
-
-                <div>
-                  <h4 className="text-md font-medium text-gray-900 mb-2">
-                    Subject
-                  </h4>
-                  <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
-                    {selectedContact.subject}
-                  </p>
-                </div>
-
-                <div>
-                  <h4 className="text-md font-medium text-gray-900 mb-2">
-                    Message
-                  </h4>
-                  <div className="text-gray-700 bg-gray-50 p-4 rounded-md max-h-40 overflow-y-auto">
-                    {selectedContact.message}
-                  </div>
-                </div>
-
-                {/* Admin Response */}
-                {selectedContact.adminResponse && (
-                  <div>
-                    <h4 className="text-md font-medium text-gray-900 mb-2">
-                      Admin Response
-                    </h4>
-                    <div className="text-gray-700 bg-blue-50 border-l-4 border-blue-400 p-4 rounded-md">
-                      {selectedContact.adminResponse}
-                    </div>
-                    {selectedContact.respondedAt && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        Responded: {formatDate(selectedContact.respondedAt)}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
-              <button
-                onClick={() => {
-                  setShowResponseModal(true);
-                }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
-              >
-                <Send className="w-4 h-4" />
-                <span>Send Response</span>
-              </button>
-
-              <select
-                value={selectedContact.status}
-                onChange={(e) =>
-                  handleStatusChange(selectedContact.id, e.target.value)
-                }
-                className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="PENDING">Pending</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="RESOLVED">Resolved</option>
-                <option value="CLOSED">Closed</option>
-              </select>
-
-              <button
-                onClick={() => setSelectedContact(null)}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Response modal
+  // Response modal for quick responses
   const ResponseModal = () => {
     if (!showResponseModal || !selectedContact) return null;
 
@@ -735,7 +548,7 @@ const ContactUsList: React.FC = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">
-                Send Response to {selectedContact.firstName}{" "}
+                Quick Response to {selectedContact.firstName}{" "}
                 {selectedContact.lastName}
               </h2>
               <button
@@ -825,12 +638,12 @@ const ContactUsList: React.FC = () => {
     <div className="px-6">
       <div>
         {/* Header with Search and Filters */}
-        <div className="mb-8  pt-6">
+        <div className="mb-8 pt-6">
           <div className="flex flex-col space-y-4">
             {/* Title */}
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">
-                Support
+                Support Messages
               </h1>
               <button
                 onClick={() => refetch()}
@@ -954,7 +767,7 @@ const ContactUsList: React.FC = () => {
 
         {/* Stats Cards */}
         {pagination && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8 ">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -1049,7 +862,7 @@ const ContactUsList: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {contacts.length > 0 ? (
             <>
-              <div className="">
+              <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
@@ -1096,6 +909,7 @@ const ContactUsList: React.FC = () => {
                                 {!contact.isRead && (
                                   <div className="w-2 h-2 bg-red-500 rounded-full ml-2"></div>
                                 )}
+                                <ExternalLink className="w-3 h-3 ml-2 text-gray-400" />
                               </div>
                               <div className="text-sm text-gray-500 flex items-center">
                                 <Mail className="w-3 h-3 mr-1" />
@@ -1183,8 +997,7 @@ const ContactUsList: React.FC = () => {
           )}
         </div>
 
-        {/* Modals */}
-        <ContactDetailsModal />
+        {/* Response Modal for Quick Responses */}
         <ResponseModal />
       </div>
     </div>

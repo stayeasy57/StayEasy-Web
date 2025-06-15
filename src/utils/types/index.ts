@@ -615,3 +615,30 @@ export interface ContactUsStatisticsResponse {
     }>;
   };
 }
+
+
+export interface ContactUsDetailsResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    message: string;
+    phoneNumber: string;
+    subject: string;
+    category: string;
+    priority: string;
+    status: string;
+    adminResponse: string | null;
+    respondedBy: number | null;
+    respondedAt: string | null;
+    ipAddress: string;
+    userAgent: string;
+    isRead: boolean;
+    readAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
