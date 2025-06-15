@@ -5,8 +5,14 @@ import {
   BookingDetailsResponse,
   BookingsQueryParams,
   BookingsResponse,
+  ContactUsDetailsResponse,
+  ContactUsRequest,
+  ContactUsResponse,
+  ContactUsStatisticsResponse,
   CreateBookingRequest,
   CreateBookingResponse,
+  FullUpdateContactRequest,
+  FullUpdateContactResponse,
   LandlordDetailsResponse,
   LandlordsQueryParams,
   LandlordsResponse,
@@ -29,25 +35,66 @@ import {
   UsersResponse,
 } from "@/utils/types";
 
-// Define interfaces for Contact Us API
-export interface ContactUsRequest {
+// Define interfaces for Contact Us List API
+export interface ContactUsItem {
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber?: string;
-  subject: string;
   message: string;
-  category: 'GENERAL_INQUIRY' | 'TECHNICAL_SUPPORT' | 'BILLING' | 'PROPERTY_LISTING' | 'TENANT_SUPPORT' | 'LANDLORD_SUPPORT' | 'PARTNERSHIP' | 'FEEDBACK' | 'COMPLAINT' | 'OTHER';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  phoneNumber: string;
+  subject: string;
+  category: string;
+  priority: string;
+  status: string;
+  adminResponse: string | null;
+  respondedBy: number | null;
+  respondedAt: string | null;
+  ipAddress: string;
+  userAgent: string;
+  isRead: boolean;
+  readAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface ContactUsResponse {
-  success: boolean;
+export interface ContactUsListResponse {
+  statusCode: number;
   message: string;
-  data?: {
-    id: string;
-    createdAt: string;
+  data: ContactUsItem[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   };
+}
+
+export interface ContactUsListQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  category?: string;
+  priority?: string;
+  isRead?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface UpdateReadContactStatusRequest {
+  id: number;
+  status?: string;
+  adminResponse?: string;
+  isRead?: boolean;
+}
+
+export interface UpdateReadContactStatusResponse {
+  statusCode: number;
+  message: string;
+  data: ContactUsItem;
 }
 
 // Define our API with endpoints
@@ -78,7 +125,9 @@ export const authApi = createApi({
     "Bookings",
     "Reviews",
     "ContactUs",
-  ], // Add ContactUs tag type for caching
+    "ContactUsStats",
+    "ContactUsList", // Add new tag type for contact us list
+  ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -114,7 +163,114 @@ export const authApi = createApi({
         method: "POST",
         body: contactData,
       }),
-      invalidatesTags: ["ContactUs"],
+      invalidatesTags: ["ContactUs", "ContactUsStats", "ContactUsList"],
+    }),
+
+    // Get Contact Us Statistics
+    getContactUsStatistics: builder.query<ContactUsStatisticsResponse, void>({
+      query: () => "/admin/contact-us/statistics",
+      providesTags: ["ContactUsStats"],
+    }),
+
+
+    updateContact: builder.mutation<
+  FullUpdateContactResponse,
+  FullUpdateContactRequest
+>({
+  query: ({ id, ...updateData }) => ({
+    url: `/admin/contact-us/${id}`,
+    method: "PATCH",
+    body: updateData,
+  }),
+  invalidatesTags: (result, error, { id }) => [
+    { type: "ContactUsList", id },
+    { type: "ContactUsList", id: "LIST" },
+    "ContactUsList",
+    "ContactUsStats",
+    "ContactUs",
+  ],
+}),
+
+    // Get Contact Us List - NEW ENDPOINT
+    getContactUsList: builder.query<
+      ContactUsListResponse,
+      ContactUsListQueryParams
+    >({
+      query: (params = {}) => {
+        const {
+          page = 1,
+          limit = 10,
+          search,
+          status,
+          category,
+          priority,
+          isRead,
+          startDate,
+          endDate,
+        } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (status && status !== "all") {
+          searchParams.append("status", status);
+        }
+
+        if (category && category !== "all") {
+          searchParams.append("category", category);
+        }
+
+        if (priority && priority !== "all") {
+          searchParams.append("priority", priority);
+        }
+
+        if (isRead !== undefined) {
+          searchParams.append("isRead", isRead.toString());
+        }
+
+        if (startDate) {
+          searchParams.append("startDate", startDate);
+        }
+
+        if (endDate) {
+          searchParams.append("endDate", endDate);
+        }
+
+        return `/admin/contact-us?${searchParams.toString()}`;
+      },
+      providesTags: ["ContactUsList"],
+    }),
+
+    getContactUsById: builder.query<ContactUsDetailsResponse, string | number>({
+      query: (id) => `/admin/contact-us/${id}`,
+      providesTags: (result, error, id) => [
+        { type: "ContactUsList", id },
+        { type: "ContactUsList", id: "LIST" },
+      ],
+    }),
+
+    // Update Contact Us - NEW ENDPOINT
+    UpdateReadContactStatus: builder.mutation<
+      UpdateReadContactStatusResponse,
+      UpdateReadContactStatusRequest
+    >({
+      query: ({ id, ...updateData }) => ({
+        url: `/admin/contact-us/${id}/read-status`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "ContactUsList", id },
+        { type: "ContactUsList", id: "LIST" },
+        "ContactUsList",
+        "ContactUsStats",
+      ],
     }),
 
     // BOOKING API --------------------
@@ -127,7 +283,7 @@ export const authApi = createApi({
         method: "POST",
         body: bookingData,
       }),
-      invalidatesTags: ["Bookings", "Properties"], // Invalidate bookings and properties cache after creating a booking
+      invalidatesTags: ["Bookings", "Properties"],
     }),
 
     // ADMIN --------------------
@@ -423,29 +579,32 @@ export const {
   useLogoutMutation,
   useGetPropertiesQuery,
   // CONTACT US
-  useSubmitContactFormMutation, // New hook for contact form submission
+  useSubmitContactFormMutation,
+  useGetContactUsByIdQuery,
+  useUpdateContactMutation,
+  useGetContactUsStatisticsQuery,
+  useGetContactUsListQuery, // NEW HOOK for contact us list
+  useUpdateReadContactStatusMutation, // NEW HOOK for updating contact us
   // BOOKING
   useCreateBookingMutation,
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
-  useGetLandlordsQuery, // New hook for landlords
-  useGetLandlordByIdQuery, // New hook for single landlord
-  useGetTenantsQuery, // New hook for tenants
-  useGetTenantByIdQuery, // New hook for single tenant
+  useGetLandlordsQuery,
+  useGetLandlordByIdQuery,
+  useGetTenantsQuery,
+  useGetTenantByIdQuery,
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
   usePublishPropertyMutation,
   // BOOKINGS ADMIN
-  useGetBookingsQuery, // New hook for bookings
-  useGetBookingByIdQuery, // New hook for single booking
-  useUpdateBookingStatusMutation, // New hook for updating booking status
-
+  useGetBookingsQuery,
+  useGetBookingByIdQuery,
+  useUpdateBookingStatusMutation,
   // REVIEWS ADMIN
-  useGetReviewsQuery, // New hook for reviews
-  useGetReviewByIdQuery, // New hook for single review
-  useUpdateReviewMutation, // New hook for updating review
-
+  useGetReviewsQuery,
+  useGetReviewByIdQuery,
+  useUpdateReviewMutation,
   useGetPropertyQuery,
   useGetCurrentUserQuery,
 } = authApi;

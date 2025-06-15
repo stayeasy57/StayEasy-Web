@@ -17,7 +17,7 @@ const AdminPanelHeader = () => {
 
   return (
     <div className="flex justify-between items-center px-6 py-3 border-b border-gray-200">
-      <h1 className="text-xl font-bold">Dashboard</h1>
+      <h1 className="text-xl font-bold"></h1>
 
       <div className="flex items-center bg-gray-100 rounded-full px-3 py-1 w-64">
         <Search size={16} className="text-gray-400 mr-2" />
