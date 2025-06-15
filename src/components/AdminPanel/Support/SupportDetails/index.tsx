@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import {
   useGetContactUsByIdQuery,
   useUpdateReadContactStatusMutation,
+  useUpdateContactMutation, // NEW IMPORT
 } from "@/store/api/apiSlice";
 import {
   ArrowLeft,
@@ -48,7 +49,11 @@ const ContactUsDetails: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [adminResponse, setAdminResponse] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(""); // NEW STATE
+  const [selectedPriority, setSelectedPriority] = useState(""); // NEW STATE
+  const [respondedBy, setRespondedBy] = useState(""); // NEW STATE
   const [showResponseModal, setShowResponseModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false); // NEW STATE
 
   // Fetch contact details
   const {
@@ -59,21 +64,25 @@ const ContactUsDetails: React.FC = () => {
     refetch,
   } = useGetContactUsByIdQuery(contactId);
 
-  // Update contact mutation
+  // Update contact mutations
   const [updateContact, { isLoading: isUpdating }] = useUpdateReadContactStatusMutation();
+  const [updateFullContact, { isLoading: isFullUpdating }] = useUpdateContactMutation(); // NEW MUTATION
 
   // Initialize states when data loads
   React.useEffect(() => {
     if (contactDetailsApi?.data) {
       setSelectedStatus(contactDetailsApi.data.status);
+      setSelectedCategory(contactDetailsApi.data.category);
+      setSelectedPriority(contactDetailsApi.data.priority);
       setAdminResponse(contactDetailsApi.data.adminResponse || "");
+      setRespondedBy("Ahmad Khan (Admin)"); // Default admin name
     }
   }, [contactDetailsApi]);
 
-  // Handle status update
+  // Handle status update (quick update)
   const handleStatusUpdate = async (newStatus: string) => {
     try {
-      await updateContact({
+      await updateFullContact({
         id: parseInt(contactId),
         status: newStatus,
       }).unwrap();
@@ -83,7 +92,26 @@ const ContactUsDetails: React.FC = () => {
     }
   };
 
-  // Handle admin response
+  // Handle full contact update (comprehensive update)
+  const handleFullContactUpdate = async () => {
+    try {
+      await updateFullContact({
+        id: parseInt(contactId),
+        status: selectedStatus,
+        category: selectedCategory,
+        priority: selectedPriority,
+        adminResponse: adminResponse.trim() || undefined,
+        respondedBy: respondedBy.trim() || undefined,
+        isRead: true,
+      }).unwrap();
+      setShowEditModal(false);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update contact:", error);
+    }
+  };
+
+  // Handle admin response (legacy method - keep for backward compatibility)
   const handleSendResponse = async () => {
     if (!adminResponse.trim()) return;
 
@@ -92,6 +120,27 @@ const ContactUsDetails: React.FC = () => {
         id: parseInt(contactId),
         adminResponse: adminResponse,
         status: selectedStatus === "PENDING" ? "IN_PROGRESS" : selectedStatus,
+      }).unwrap();
+      setShowResponseModal(false);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to send response:", error);
+    }
+  };
+
+  // Handle comprehensive response with full update
+  const handleSendFullResponse = async () => {
+    if (!adminResponse.trim()) return;
+
+    try {
+      await updateFullContact({
+        id: parseInt(contactId),
+        status: selectedStatus === "PENDING" ? "IN_PROGRESS" : selectedStatus,
+        category: selectedCategory,
+        priority: selectedPriority,
+        adminResponse: adminResponse,
+        respondedBy: respondedBy,
+        isRead: true,
       }).unwrap();
       setShowResponseModal(false);
       setIsEditing(false);
@@ -270,7 +319,152 @@ const ContactUsDetails: React.FC = () => {
     </div>
   );
 
-  // Response modal
+  // Enhanced edit modal for comprehensive contact editing
+  const EditModal = () => {
+    if (!showEditModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Edit Contact Details
+              </h2>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Contact Overview */}
+            <div className="bg-gray-50 p-4 rounded-md">
+              <h3 className="font-medium text-gray-900 mb-2">Contact Overview</h3>
+              <p className="text-sm text-gray-600">
+                <strong>From:</strong> {contact.firstName} {contact.lastName} ({contact.email})
+              </p>
+              <p className="text-sm text-gray-600">
+                <strong>Subject:</strong> {contact.subject}
+              </p>
+            </div>
+
+            {/* Status, Category, Priority */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Status
+                </label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="RESOLVED">Resolved</option>
+                  <option value="CLOSED">Closed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="GENERAL_INQUIRY">General Inquiry</option>
+                  <option value="TECHNICAL_SUPPORT">Technical Support</option>
+                  <option value="BILLING">Billing</option>
+                  <option value="TENANT_SUPPORT">Tenant Support</option>
+                  <option value="LANDLORD_SUPPORT">Landlord Support</option>
+                  <option value="PROPERTY_LISTING">Property Listing</option>
+                  <option value="PARTNERSHIP">Partnership</option>
+                  <option value="FEEDBACK">Feedback</option>
+                  <option value="COMPLAINT">Complaint</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Priority
+                </label>
+                <select
+                  value={selectedPriority}
+                  onChange={(e) => setSelectedPriority(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="URGENT">Urgent</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Admin Response */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Response
+              </label>
+              <textarea
+                value={adminResponse}
+                onChange={(e) => setAdminResponse(e.target.value)}
+                rows={6}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Type your response here..."
+              />
+            </div>
+
+            {/* Responded By */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Responded By
+              </label>
+              <input
+                type="text"
+                value={respondedBy}
+                onChange={(e) => setRespondedBy(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter admin name..."
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleFullContactUpdate}
+                disabled={isFullUpdating}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isFullUpdating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
+                <span>Save Changes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Enhanced response modal
   const ResponseModal = () => {
     if (!showResponseModal) return null;
 
@@ -301,7 +495,64 @@ const ContactUsDetails: React.FC = () => {
               </div>
             </div>
 
-            <div>
+            {/* Enhanced response controls */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="PENDING">Pending</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="RESOLVED">Resolved</option>
+                  <option value="CLOSED">Closed</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Priority
+                </label>
+                <select
+                  value={selectedPriority}
+                  onChange={(e) => setSelectedPriority(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="URGENT">Urgent</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="GENERAL_INQUIRY">General Inquiry</option>
+                  <option value="TECHNICAL_SUPPORT">Technical Support</option>
+                  <option value="BILLING">Billing</option>
+                  <option value="TENANT_SUPPORT">Tenant Support</option>
+                  <option value="LANDLORD_SUPPORT">Landlord Support</option>
+                  <option value="PROPERTY_LISTING">Property Listing</option>
+                  <option value="PARTNERSHIP">Partnership</option>
+                  <option value="FEEDBACK">Feedback</option>
+                  <option value="COMPLAINT">Complaint</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Your Response
               </label>
@@ -314,7 +565,20 @@ const ContactUsDetails: React.FC = () => {
               />
             </div>
 
-            <div className="flex items-center justify-end space-x-3 mt-6">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Responded By
+              </label>
+              <input
+                type="text"
+                value={respondedBy}
+                onChange={(e) => setRespondedBy(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter admin name..."
+              />
+            </div>
+
+            <div className="flex items-center justify-end space-x-3">
               <button
                 onClick={() => setShowResponseModal(false)}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
@@ -322,11 +586,11 @@ const ContactUsDetails: React.FC = () => {
                 Cancel
               </button>
               <button
-                onClick={handleSendResponse}
-                disabled={isUpdating || !adminResponse.trim()}
+                onClick={handleSendFullResponse}
+                disabled={isFullUpdating || !adminResponse.trim()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isUpdating ? (
+                {isFullUpdating ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Send className="w-4 h-4" />
@@ -374,6 +638,14 @@ const ContactUsDetails: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-3 mt-4 lg:mt-0">
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Details
+              </button>
+
               <button
                 onClick={() => setShowResponseModal(true)}
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -453,16 +725,26 @@ const ContactUsDetails: React.FC = () => {
                         <CheckCheck className="w-4 h-4 mr-2" />
                         <span>
                           Responded on {formatDate(contact.respondedAt)}
+                          {contact.respondedBy && ` by ${contact.respondedBy}`}
                         </span>
                       </div>
                     )}
-                    <button
-                      onClick={() => setShowResponseModal(true)}
-                      className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Update Response
-                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => setShowResponseModal(true)}
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Update Response
+                      </button>
+                      <button
+                        onClick={() => setShowEditModal(true)}
+                        className="inline-flex items-center text-green-600 hover:text-green-800 text-sm font-medium"
+                      >
+                        <Settings className="w-4 h-4 mr-1" />
+                        Edit All Details
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
@@ -538,9 +820,17 @@ const ContactUsDetails: React.FC = () => {
             {/* Status and Priority */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Status & Priority
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Status & Priority
+                  </h3>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <div className="p-6 space-y-4">
                 <div>
@@ -687,6 +977,7 @@ const ContactUsDetails: React.FC = () => {
                         </p>
                         <p className="text-xs text-gray-500">
                           {formatDate(contact.respondedAt)}
+                          {contact.respondedBy && ` by ${contact.respondedBy}`}
                         </p>
                       </div>
                     </div>
@@ -711,8 +1002,9 @@ const ContactUsDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Response Modal */}
+        {/* Modals */}
         <ResponseModal />
+        <EditModal />
       </div>
     </div>
   );

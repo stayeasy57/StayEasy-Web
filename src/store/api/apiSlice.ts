@@ -11,6 +11,8 @@ import {
   ContactUsStatisticsResponse,
   CreateBookingRequest,
   CreateBookingResponse,
+  FullUpdateContactRequest,
+  FullUpdateContactResponse,
   LandlordDetailsResponse,
   LandlordsQueryParams,
   LandlordsResponse,
@@ -169,6 +171,25 @@ export const authApi = createApi({
       query: () => "/admin/contact-us/statistics",
       providesTags: ["ContactUsStats"],
     }),
+
+
+    updateContact: builder.mutation<
+  FullUpdateContactResponse,
+  FullUpdateContactRequest
+>({
+  query: ({ id, ...updateData }) => ({
+    url: `/admin/contact-us/${id}`,
+    method: "PATCH",
+    body: updateData,
+  }),
+  invalidatesTags: (result, error, { id }) => [
+    { type: "ContactUsList", id },
+    { type: "ContactUsList", id: "LIST" },
+    "ContactUsList",
+    "ContactUsStats",
+    "ContactUs",
+  ],
+}),
 
     // Get Contact Us List - NEW ENDPOINT
     getContactUsList: builder.query<
@@ -560,6 +581,7 @@ export const {
   // CONTACT US
   useSubmitContactFormMutation,
   useGetContactUsByIdQuery,
+  useUpdateContactMutation,
   useGetContactUsStatisticsQuery,
   useGetContactUsListQuery, // NEW HOOK for contact us list
   useUpdateReadContactStatusMutation, // NEW HOOK for updating contact us

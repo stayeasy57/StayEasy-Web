@@ -1,3 +1,5 @@
+import { ContactUsItem } from "@/store/api/apiSlice";
+
 export interface User {
   id: number;
   fullName: string;
@@ -641,4 +643,21 @@ export interface ContactUsDetailsResponse {
     createdAt: string;
     updatedAt: string;
   };
+}
+
+
+export interface FullUpdateContactRequest {
+  id: number;
+  status?: string;
+  category?: string;
+  priority?: string;
+  adminResponse?: string;
+  respondedBy?: string;
+  isRead?: boolean;
+}
+
+export interface FullUpdateContactResponse {
+  statusCode: number;
+  message: string;
+  data: ContactUsItem;
 }
