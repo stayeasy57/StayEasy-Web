@@ -29,7 +29,26 @@ import {
   UsersResponse,
 } from "@/utils/types";
 
-// Define interfaces for Users API
+// Define interfaces for Contact Us API
+export interface ContactUsRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  subject: string;
+  message: string;
+  category: 'GENERAL_INQUIRY' | 'TECHNICAL_SUPPORT' | 'BILLING' | 'PROPERTY_LISTING' | 'TENANT_SUPPORT' | 'LANDLORD_SUPPORT' | 'PARTNERSHIP' | 'FEEDBACK' | 'COMPLAINT' | 'OTHER';
+  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+}
+
+export interface ContactUsResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    id: string;
+    createdAt: string;
+  };
+}
 
 // Define our API with endpoints
 export const authApi = createApi({
@@ -58,7 +77,8 @@ export const authApi = createApi({
     "Property",
     "Bookings",
     "Reviews",
-  ], // Add Reviews tag type for caching
+    "ContactUs",
+  ], // Add ContactUs tag type for caching
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -85,6 +105,16 @@ export const authApi = createApi({
     }),
     getProperty: builder.query<any, any>({
       query: (id) => `/properties/${id}`,
+    }),
+
+    // CONTACT US API --------------------
+    submitContactForm: builder.mutation<ContactUsResponse, ContactUsRequest>({
+      query: (contactData) => ({
+        url: "/contact-us",
+        method: "POST",
+        body: contactData,
+      }),
+      invalidatesTags: ["ContactUs"],
     }),
 
     // BOOKING API --------------------
@@ -392,6 +422,8 @@ export const {
   useSignupMutation,
   useLogoutMutation,
   useGetPropertiesQuery,
+  // CONTACT US
+  useSubmitContactFormMutation, // New hook for contact form submission
   // BOOKING
   useCreateBookingMutation,
   // ADMIN
