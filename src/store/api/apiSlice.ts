@@ -5,6 +5,9 @@ import {
   BookingDetailsResponse,
   BookingsQueryParams,
   BookingsResponse,
+  ContactUsRequest,
+  ContactUsResponse,
+  ContactUsStatisticsResponse,
   CreateBookingRequest,
   CreateBookingResponse,
   LandlordDetailsResponse,
@@ -30,80 +33,6 @@ import {
 } from "@/utils/types";
 
 // Define interfaces for Contact Us API
-export interface ContactUsRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  subject: string;
-  message: string;
-  category: 'GENERAL_INQUIRY' | 'TECHNICAL_SUPPORT' | 'BILLING' | 'PROPERTY_LISTING' | 'TENANT_SUPPORT' | 'LANDLORD_SUPPORT' | 'PARTNERSHIP' | 'FEEDBACK' | 'COMPLAINT' | 'OTHER';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
-}
-
-export interface ContactUsResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    id: string;
-    createdAt: string;
-  };
-}
-
-// Define interface for Contact Us Statistics
-export interface ContactUsStatisticsResponse {
-  statusCode: number;
-  message: string;
-  data: {
-    total: number;
-    byStatus: {
-      pending: number;
-      inProgress: number;
-      resolved: number;
-      closed: number;
-    };
-    byCategory: {
-      TECHNICAL_SUPPORT: number;
-      GENERAL_INQUIRY: number;
-      BILLING: number;
-      TENANT_SUPPORT: number;
-      PROPERTY_LISTING?: number;
-      LANDLORD_SUPPORT?: number;
-      PARTNERSHIP?: number;
-      FEEDBACK?: number;
-      COMPLAINT?: number;
-      OTHER?: number;
-    };
-    byPriority: {
-      low: number;
-      medium: number;
-      high: number;
-      urgent: number;
-    };
-    unread: number;
-    timeBasedCounts: {
-      today: number;
-      thisWeek: number;
-      thisMonth: number;
-    };
-    responseStats: {
-      totalResponded: number;
-      averageResponseTime: number;
-      pendingResponse: number;
-    };
-    recentContacts: Array<{
-      id: number;
-      firstName: string;
-      lastName: string;
-      email: string;
-      subject: string;
-      status: string;
-      priority: string;
-      isRead: boolean;
-      createdAt: string;
-    }>;
-  };
-}
 
 // Define our API with endpoints
 export const authApi = createApi({
