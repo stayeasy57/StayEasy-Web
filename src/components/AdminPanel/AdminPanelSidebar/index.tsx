@@ -122,6 +122,12 @@ const AdminPanelSidebar = () => {
       route: "/admin/reviews",
       notification: 0,
     },
+    {
+      icon: <Briefcase size={16} />,
+      label: "Support",
+      route: "/admin/support",
+      notification: 0,
+    },
   ];
 
   return (

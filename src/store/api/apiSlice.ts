@@ -32,7 +32,67 @@ import {
   UsersResponse,
 } from "@/utils/types";
 
-// Define interfaces for Contact Us API
+// Define interfaces for Contact Us List API
+export interface ContactUsItem {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  message: string;
+  phoneNumber: string;
+  subject: string;
+  category: string;
+  priority: string;
+  status: string;
+  adminResponse: string | null;
+  respondedBy: number | null;
+  respondedAt: string | null;
+  ipAddress: string;
+  userAgent: string;
+  isRead: boolean;
+  readAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContactUsListResponse {
+  statusCode: number;
+  message: string;
+  data: ContactUsItem[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+export interface ContactUsListQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  category?: string;
+  priority?: string;
+  isRead?: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface UpdateContactUsRequest {
+  id: number;
+  status?: string;
+  adminResponse?: string;
+  isRead?: boolean;
+}
+
+export interface UpdateContactUsResponse {
+  statusCode: number;
+  message: string;
+  data: ContactUsItem;
+}
 
 // Define our API with endpoints
 export const authApi = createApi({
@@ -62,7 +122,8 @@ export const authApi = createApi({
     "Bookings",
     "Reviews",
     "ContactUs",
-    "ContactUsStats", // Add new tag type for contact us statistics
+    "ContactUsStats",
+    "ContactUsList", // Add new tag type for contact us list
   ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
@@ -99,13 +160,81 @@ export const authApi = createApi({
         method: "POST",
         body: contactData,
       }),
-      invalidatesTags: ["ContactUs", "ContactUsStats"], // Also invalidate stats when new contact is created
+      invalidatesTags: ["ContactUs", "ContactUsStats", "ContactUsList"],
     }),
 
-    // Get Contact Us Statistics - NEW ENDPOINT
+    // Get Contact Us Statistics
     getContactUsStatistics: builder.query<ContactUsStatisticsResponse, void>({
       query: () => "/admin/contact-us/statistics",
       providesTags: ["ContactUsStats"],
+    }),
+
+    // Get Contact Us List - NEW ENDPOINT
+    getContactUsList: builder.query<ContactUsListResponse, ContactUsListQueryParams>({
+      query: (params = {}) => {
+        const {
+          page = 1,
+          limit = 10,
+          search,
+          status,
+          category,
+          priority,
+          isRead,
+          startDate,
+          endDate,
+        } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (status && status !== "all") {
+          searchParams.append("status", status);
+        }
+
+        if (category && category !== "all") {
+          searchParams.append("category", category);
+        }
+
+        if (priority && priority !== "all") {
+          searchParams.append("priority", priority);
+        }
+
+        if (isRead !== undefined) {
+          searchParams.append("isRead", isRead.toString());
+        }
+
+        if (startDate) {
+          searchParams.append("startDate", startDate);
+        }
+
+        if (endDate) {
+          searchParams.append("endDate", endDate);
+        }
+
+        return `/admin/contact-us?${searchParams.toString()}`;
+      },
+      providesTags: ["ContactUsList"],
+    }),
+
+    // Update Contact Us - NEW ENDPOINT
+    updateContactUs: builder.mutation<UpdateContactUsResponse, UpdateContactUsRequest>({
+      query: ({ id, ...updateData }) => ({
+        url: `/admin/contact-us/${id}`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "ContactUsList", id },
+        { type: "ContactUsList", id: "LIST" },
+        "ContactUsList",
+        "ContactUsStats",
+      ],
     }),
 
     // BOOKING API --------------------
@@ -118,7 +247,7 @@ export const authApi = createApi({
         method: "POST",
         body: bookingData,
       }),
-      invalidatesTags: ["Bookings", "Properties"], // Invalidate bookings and properties cache after creating a booking
+      invalidatesTags: ["Bookings", "Properties"],
     }),
 
     // ADMIN --------------------
@@ -415,7 +544,9 @@ export const {
   useGetPropertiesQuery,
   // CONTACT US
   useSubmitContactFormMutation,
-  useGetContactUsStatisticsQuery, // NEW HOOK for contact us statistics
+  useGetContactUsStatisticsQuery,
+  useGetContactUsListQuery, // NEW HOOK for contact us list
+  useUpdateContactUsMutation, // NEW HOOK for updating contact us
   // BOOKING
   useCreateBookingMutation,
   // ADMIN
