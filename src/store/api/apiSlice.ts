@@ -50,6 +50,61 @@ export interface ContactUsResponse {
   };
 }
 
+// Define interface for Contact Us Statistics
+export interface ContactUsStatisticsResponse {
+  statusCode: number;
+  message: string;
+  data: {
+    total: number;
+    byStatus: {
+      pending: number;
+      inProgress: number;
+      resolved: number;
+      closed: number;
+    };
+    byCategory: {
+      TECHNICAL_SUPPORT: number;
+      GENERAL_INQUIRY: number;
+      BILLING: number;
+      TENANT_SUPPORT: number;
+      PROPERTY_LISTING?: number;
+      LANDLORD_SUPPORT?: number;
+      PARTNERSHIP?: number;
+      FEEDBACK?: number;
+      COMPLAINT?: number;
+      OTHER?: number;
+    };
+    byPriority: {
+      low: number;
+      medium: number;
+      high: number;
+      urgent: number;
+    };
+    unread: number;
+    timeBasedCounts: {
+      today: number;
+      thisWeek: number;
+      thisMonth: number;
+    };
+    responseStats: {
+      totalResponded: number;
+      averageResponseTime: number;
+      pendingResponse: number;
+    };
+    recentContacts: Array<{
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+      subject: string;
+      status: string;
+      priority: string;
+      isRead: boolean;
+      createdAt: string;
+    }>;
+  };
+}
+
 // Define our API with endpoints
 export const authApi = createApi({
   reducerPath: "authApi",
@@ -78,7 +133,8 @@ export const authApi = createApi({
     "Bookings",
     "Reviews",
     "ContactUs",
-  ], // Add ContactUs tag type for caching
+    "ContactUsStats", // Add new tag type for contact us statistics
+  ],
   endpoints: (builder) => ({
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (credentials) => ({
@@ -114,7 +170,13 @@ export const authApi = createApi({
         method: "POST",
         body: contactData,
       }),
-      invalidatesTags: ["ContactUs"],
+      invalidatesTags: ["ContactUs", "ContactUsStats"], // Also invalidate stats when new contact is created
+    }),
+
+    // Get Contact Us Statistics - NEW ENDPOINT
+    getContactUsStatistics: builder.query<ContactUsStatisticsResponse, void>({
+      query: () => "/admin/contact-us/statistics",
+      providesTags: ["ContactUsStats"],
     }),
 
     // BOOKING API --------------------
@@ -423,29 +485,28 @@ export const {
   useLogoutMutation,
   useGetPropertiesQuery,
   // CONTACT US
-  useSubmitContactFormMutation, // New hook for contact form submission
+  useSubmitContactFormMutation,
+  useGetContactUsStatisticsQuery, // NEW HOOK for contact us statistics
   // BOOKING
   useCreateBookingMutation,
   // ADMIN
   useGetAdminDashboardStatsQuery,
   useGetUsersQuery,
-  useGetLandlordsQuery, // New hook for landlords
-  useGetLandlordByIdQuery, // New hook for single landlord
-  useGetTenantsQuery, // New hook for tenants
-  useGetTenantByIdQuery, // New hook for single tenant
+  useGetLandlordsQuery,
+  useGetLandlordByIdQuery,
+  useGetTenantsQuery,
+  useGetTenantByIdQuery,
   useGetPropertiesForAdminQuery,
   useGetPropertyByAdminQuery,
   usePublishPropertyMutation,
   // BOOKINGS ADMIN
-  useGetBookingsQuery, // New hook for bookings
-  useGetBookingByIdQuery, // New hook for single booking
-  useUpdateBookingStatusMutation, // New hook for updating booking status
-
+  useGetBookingsQuery,
+  useGetBookingByIdQuery,
+  useUpdateBookingStatusMutation,
   // REVIEWS ADMIN
-  useGetReviewsQuery, // New hook for reviews
-  useGetReviewByIdQuery, // New hook for single review
-  useUpdateReviewMutation, // New hook for updating review
-
+  useGetReviewsQuery,
+  useGetReviewByIdQuery,
+  useUpdateReviewMutation,
   useGetPropertyQuery,
   useGetCurrentUserQuery,
 } = authApi;

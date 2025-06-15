@@ -1,5 +1,8 @@
 import React from "react";
-import { useGetAdminDashboardStatsQuery } from "@/store/api/apiSlice";
+import {
+  useGetAdminDashboardStatsQuery,
+  useGetContactUsStatisticsQuery,
+} from "@/store/api/apiSlice";
 import {
   Users,
   Building,
@@ -21,6 +24,16 @@ import {
   TrendingUp,
   Award,
   Globe,
+  MessageSquare,
+  Mail,
+  Phone,
+  HelpCircle,
+  CreditCard,
+  Home,
+  Settings,
+  AlertTriangle,
+  FileText,
+  MessageCircle,
 } from "lucide-react";
 
 interface DashboardData {
@@ -123,16 +136,80 @@ interface DashboardData {
   };
 }
 
+// Contact Us Statistics Data Interface
+interface ContactUsStatisticsData {
+  statusCode: number;
+  message: string;
+  data: {
+    total: number;
+    byStatus: {
+      pending: number;
+      inProgress: number;
+      resolved: number;
+      closed: number;
+    };
+    byCategory: {
+      TECHNICAL_SUPPORT: number;
+      GENERAL_INQUIRY: number;
+      BILLING: number;
+      TENANT_SUPPORT: number;
+      PROPERTY_LISTING?: number;
+      LANDLORD_SUPPORT?: number;
+      PARTNERSHIP?: number;
+      FEEDBACK?: number;
+      COMPLAINT?: number;
+      OTHER?: number;
+    };
+    byPriority: {
+      low: number;
+      medium: number;
+      high: number;
+      urgent: number;
+    };
+    unread: number;
+    timeBasedCounts: {
+      today: number;
+      thisWeek: number;
+      thisMonth: number;
+    };
+    responseStats: {
+      totalResponded: number;
+      averageResponseTime: number;
+      pendingResponse: number;
+    };
+    recentContacts: Array<{
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+      subject: string;
+      status: string;
+      priority: string;
+      isRead: boolean;
+      createdAt: string;
+    }>;
+  };
+}
+
 const DashboardStats: React.FC = () => {
   // Fetch dashboard statistics using RTK Query
   const {
     data: dashboardDataApi,
-    isLoading,
-    isError,
-    error,
+    isLoading: isDashboardLoading,
+    isError: isDashboardError,
+    error: dashboardError,
   } = useGetAdminDashboardStatsQuery();
 
+  // Fetch contact us statistics using RTK Query
+  const {
+    data: contactUsDataApi,
+    isLoading: isContactUsLoading,
+    isError: isContactUsError,
+    error: contactUsError,
+  } = useGetContactUsStatisticsQuery();
+
   console.log("Dashboard Data:", dashboardDataApi);
+  console.log("Contact Us Data:", contactUsDataApi);
 
   // Format date helper
   const formatDate = (dateString: string) => {
@@ -207,6 +284,54 @@ const DashboardStats: React.FC = () => {
         return "text-purple-600 bg-purple-100";
       default:
         return "text-gray-600 bg-gray-100";
+    }
+  };
+
+  // Get contact status color
+  const getContactStatusColor = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return "text-yellow-600 bg-yellow-100";
+      case "IN_PROGRESS":
+        return "text-blue-600 bg-blue-100";
+      case "RESOLVED":
+        return "text-green-600 bg-green-100";
+      case "CLOSED":
+        return "text-gray-600 bg-gray-100";
+      default:
+        return "text-gray-600 bg-gray-100";
+    }
+  };
+
+  // Get priority color
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case "urgent":
+        return "text-red-600 bg-red-100";
+      case "high":
+        return "text-orange-600 bg-orange-100";
+      case "medium":
+        return "text-yellow-600 bg-yellow-100";
+      case "low":
+        return "text-green-600 bg-green-100";
+      default:
+        return "text-gray-600 bg-gray-100";
+    }
+  };
+
+  // Get category icon
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "TECHNICAL_SUPPORT":
+        return Settings;
+      case "GENERAL_INQUIRY":
+        return HelpCircle;
+      case "BILLING":
+        return CreditCard;
+      case "TENANT_SUPPORT":
+        return Home;
+      default:
+        return MessageSquare;
     }
   };
 
@@ -295,99 +420,6 @@ const DashboardStats: React.FC = () => {
             color="bg-orange-500"
             isLoading
           />
-          <StatCard
-            title="Published Properties"
-            value={0}
-            icon={Building}
-            color="bg-teal-500"
-            isLoading
-          />
-          <StatCard
-            title="Bookings"
-            value={0}
-            icon={Calendar}
-            color="bg-pink-500"
-            isLoading
-          />
-          <StatCard
-            title="Reviews"
-            value={0}
-            icon={Star}
-            color="bg-yellow-500"
-            isLoading
-          />
-          <StatCard
-            title="Property Views"
-            value={0}
-            icon={Eye}
-            color="bg-cyan-500"
-            isLoading
-          />
-          <StatCard
-            title="Unique Viewers"
-            value={0}
-            icon={Globe}
-            color="bg-red-500"
-            isLoading
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Loading Recent Users */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Recent Users
-                </h2>
-                <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full animate-pulse"></div>
-                      <div>
-                        <div className="w-24 h-4 bg-gray-300 rounded animate-pulse mb-2"></div>
-                        <div className="w-32 h-3 bg-gray-200 rounded animate-pulse"></div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="w-16 h-6 bg-gray-300 rounded-full animate-pulse mb-2"></div>
-                      <div className="w-20 h-3 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Loading Booking Statistics */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Booking Status
-              </h2>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-5 h-5 bg-gray-300 rounded animate-pulse"></div>
-                      <div className="w-20 h-4 bg-gray-300 rounded animate-pulse"></div>
-                    </div>
-                    <div className="w-8 h-6 bg-gray-300 rounded animate-pulse"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -421,23 +453,35 @@ const DashboardStats: React.FC = () => {
   );
 
   // Show loading state
-  if (isLoading) {
+  if (isDashboardLoading || isContactUsLoading) {
     return <LoadingDashboard />;
   }
 
   // Show error state
-  if (isError) {
-    return <ErrorDashboard error={error} />;
+  if (isDashboardError || isContactUsError) {
+    return <ErrorDashboard error={dashboardError || contactUsError} />;
   }
 
   // Check if data exists and has the expected structure
   if (!dashboardDataApi || !dashboardDataApi.data) {
     return (
-      <ErrorDashboard error={{ message: "No data received from server" }} />
+      <ErrorDashboard
+        error={{ message: "No dashboard data received from server" }}
+      />
+    );
+  }
+
+  // Check if contact us data exists
+  if (!contactUsDataApi || !contactUsDataApi.data) {
+    return (
+      <ErrorDashboard
+        error={{ message: "No contact us data received from server" }}
+      />
     );
   }
 
   const data = dashboardDataApi.data;
+  const contactUsData = contactUsDataApi;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -511,6 +555,235 @@ const DashboardStats: React.FC = () => {
           />
         </div>
 
+        {/* Contact Us Statistics Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">
+            Contact & Support Statistics
+          </h2>
+
+          {/* Contact Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <StatCard
+              title="Total Contacts"
+              value={contactUsData.data.total}
+              icon={MessageSquare}
+              color="bg-violet-500"
+              subtitle={`${contactUsData.data.unread} unread`}
+            />
+            <StatCard
+              title="Pending Response"
+              value={contactUsData.data.responseStats.pendingResponse}
+              icon={AlertTriangle}
+              color="bg-amber-500"
+              subtitle="Need attention"
+            />
+            <StatCard
+              title="Today's Contacts"
+              value={contactUsData.data.timeBasedCounts.today}
+              icon={Phone}
+              color="bg-emerald-500"
+            />
+            <StatCard
+              title="This Week"
+              value={contactUsData.data.timeBasedCounts.thisWeek}
+              icon={Calendar}
+              color="bg-sky-500"
+            />
+          </div>
+
+          {/* Contact Details Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Status Breakdown */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Contact Status
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {Object.entries(contactUsData.data.byStatus).map(
+                    ([status, count]) => (
+                      <div
+                        key={status}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              status === "pending"
+                                ? "bg-yellow-400"
+                                : status === "inProgress"
+                                ? "bg-blue-400"
+                                : status === "resolved"
+                                ? "bg-green-400"
+                                : "bg-gray-400"
+                            }`}
+                          ></div>
+                          <span className="text-sm font-medium text-gray-700 capitalize">
+                            {status.replace(/([A-Z])/g, " $1").trim()}
+                          </span>
+                        </div>
+                        <span className="text-lg font-semibold text-gray-900">
+                          {count}
+                        </span>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Category Breakdown */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  By Category
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {Object.entries(contactUsData.data.byCategory).map(
+                    ([category, count]) => {
+                      const Icon = getCategoryIcon(category);
+                      return (
+                        <div
+                          key={category}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Icon className="w-5 h-5 text-gray-600" />
+                            <span className="text-sm font-medium text-gray-700">
+                              {category
+                                .replace(/_/g, " ")
+                                .toLowerCase()
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          </div>
+                          <span className="text-lg font-semibold text-gray-900">
+                            {count}
+                          </span>
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Priority Breakdown */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  By Priority
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {Object.entries(contactUsData.data.byPriority).map(
+                    ([priority, count]) => (
+                      <div
+                        key={priority}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                              priority
+                            )}`}
+                          >
+                            {priority.toUpperCase()}
+                          </div>
+                        </div>
+                        <span className="text-lg font-semibold text-gray-900">
+                          {count}
+                        </span>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Contacts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Recent Contact Messages
+                </h3>
+                <span className="text-sm text-gray-500">
+                  {contactUsData.data.recentContacts.length} messages
+                </span>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-4">
+                {contactUsData.data.recentContacts.map((contact) => (
+                  <div
+                    key={contact.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
+                        <span className="text-white font-semibold text-sm">
+                          {contact.firstName?.charAt(0)?.toUpperCase() || "U"}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <p className="font-medium text-gray-900">
+                            {contact.firstName} {contact.lastName}
+                          </p>
+                          {!contact.isRead && (
+                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600">{contact.email}</p>
+                        <p className="text-sm text-gray-800 font-medium">
+                          {contact.subject}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <div className="flex space-x-2">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getContactStatusColor(
+                            contact.status
+                          )}`}
+                        >
+                          {contact.status}
+                        </span>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(
+                            contact.priority
+                          )}`}
+                        >
+                          {contact.priority}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        {formatDateTime(contact.createdAt)}
+                      </p>
+                      <p className="text-xs text-gray-400">ID: #{contact.id}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {contactUsData.data.recentContacts.length === 0 && (
+                <div className="text-center py-8">
+                  <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No recent contact messages</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Existing Sections - Recent Users, Top Properties, Booking Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Recent Users */}
           <div className="lg:col-span-1 bg-white rounded-lg shadow-sm border border-gray-200">
