@@ -226,7 +226,7 @@ const HostelListing = () => {
                       <img
                         src={hostel.roomImages[0]}
                         alt={hostel.hostelName}
-                        className="w-full h-48 md:h-full object-cover"
+                        className="w-full !h-[300px] md:h-full object-contain"
                       />
                       <button
                         className="absolute top-2 right-2 bg-white p-1 rounded-full shadow-md"

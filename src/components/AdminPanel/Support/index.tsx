@@ -862,7 +862,7 @@ const ContactUsList: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {contacts.length > 0 ? (
             <>
-              <div className="overflow-x-auto">
+              <div className="overflow-auto xl:overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>

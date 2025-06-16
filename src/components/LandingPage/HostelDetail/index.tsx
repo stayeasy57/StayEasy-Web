@@ -226,7 +226,7 @@ const HostelDetail = () => {
       </div>
 
       {/* Hostel Title */}
-      {console.log("propertyData", propertyData) as any}
+
       <h1 className="text-3xl font-bold text-blue-800 mb-4">
         {propertyData?.hostelName}
       </h1>
@@ -314,23 +314,25 @@ const HostelDetail = () => {
             <img
               src={propertyData?.roomImages[0]}
               alt={hostelImages[0].alt}
-              className="w-full h-64 md:h-full object-cover rounded-lg"
+              className="w-full !h-[300px] md:h-full object-contain rounded-lg"
             />
             <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
               Hotel
             </div>
           </div>
 
+          {console.log("property data" , propertyData) as any}
+
           {/* Small Images - Right Top */}
           <div className="md:col-span-3">
             <div className="grid grid-cols-2 gap-2">
               <img
-                src={hostelImages[1].src}
+                src={propertyData?.messImages[0]}
                 alt={hostelImages[1].alt}
                 className="w-full h-32 object-cover rounded-lg"
               />
               <img
-                src={hostelImages[2].src}
+                src={propertyData?.otherImages[0]}
                 alt={hostelImages[2].alt}
                 className="w-full h-32 object-cover rounded-lg"
               />
@@ -368,7 +370,7 @@ const HostelDetail = () => {
           <div className="md:col-span-3">
             <div className="grid grid-cols-3 gap-2">
               <img
-                src={hostelImages[3].src}
+                src={propertyData?.washroomImages[0]}
                 alt={hostelImages[3].alt}
                 className="w-full h-24 object-cover rounded-lg"
               />
