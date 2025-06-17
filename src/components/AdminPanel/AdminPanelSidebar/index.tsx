@@ -131,7 +131,7 @@ const AdminPanelSidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-primary border-r border-gray-200 h-screen p-4">
+    <div className=" bg-primary border-r w-[260px] border-gray-200 h-screen p-4">
       {/* Logo Section */}
       <div className="flex items-center mb-8 px-2">
         <div className="w-10 h-10 mr-2 bg-primary flex items-center justify-center">

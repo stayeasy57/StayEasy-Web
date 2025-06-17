@@ -104,6 +104,7 @@ const LocationSearch = () => {
     <div className="space-y-4" ref={searchRef}>
       <div className="relative bg-white rounded-2xl shadow-xl border border-gray-100 p-2 max-w-2xl mx-auto lg:mx-0">
         <div className="flex items-center">
+        
           <div className="flex-1 flex items-center space-x-3 px-4">
             <MapPin className="w-5 h-5 text-gray-400" />
             <input
