@@ -436,12 +436,12 @@ export const authApi = createApi({
     // Publish/Unpublish Property API endpoint for Admin
     publishProperty: builder.mutation<
       PublishPropertyResponse,
-      PublishPropertyRequest
+      any
     >({
-      query: ({ id, isPublished }) => ({
-        url: `/admin/properties/${id}/publish`,
+      query: ({ id, data }) => ({
+        url: `/admin/properties/${id}/status`,
         method: "PATCH",
-        body: { isPublished },
+        body: data,
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "Property", id },

@@ -256,6 +256,7 @@ export interface Property {
   idealFor: string;
   description: string | null;
   isProvidedFood: boolean;
+  propertyDocuments: any[];
   mealProvided: string[];
   foodType: string[];
   roomFacilities: string[];
