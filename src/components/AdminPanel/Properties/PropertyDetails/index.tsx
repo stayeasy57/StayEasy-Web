@@ -25,6 +25,7 @@ import {
   MessageSquare,
   Edit,
   ArrowLeft,
+  File,
   Check,
   X,
   Eye,
@@ -42,6 +43,8 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { selectAuth } from "@/store/slices/authSlice";
 
 interface Property {
   id: number;
@@ -65,6 +68,7 @@ interface Property {
   roomFacilities: string[];
   basicFacilities: string[];
   otherFacilities: string[];
+  propertyDocuments: any[];
   roomImages: any[];
   messImages: any[];
   washroomImages: any[];
@@ -100,6 +104,8 @@ const PropertyDetails: React.FC = () => {
   const params = useParams();
   const propertyId = params?.id as string;
 
+  const { user } = useSelector(selectAuth);
+
   // Fetch property data using RTK Query
   const {
     data: propertyResponse,
@@ -121,6 +127,7 @@ const PropertyDetails: React.FC = () => {
     facilities: true,
     meals: true,
     images: true,
+    documents: true,
     landlord: true,
   });
 
@@ -211,21 +218,18 @@ const PropertyDetails: React.FC = () => {
     if (!property || !selectedAction) return;
 
     try {
-      let isPublished: boolean;
+    
 
       if (selectedAction === "approve") {
-        isPublished = true;
-      } else {
-        isPublished = false;
-      }
-
-      await publishProperty({
+         await publishProperty({
         id: propertyId,
-        isPublished: isPublished,
+        data: {
+           action: "APPROVE",
+           reviewedBy: user?.fullName
+        },
       }).unwrap();
 
-      // Success handling
-      console.log(`Property ${selectedAction}d successfully!`);
+
 
       // Close modal and reset state
       setActionModalOpen(false);
@@ -238,6 +242,24 @@ const PropertyDetails: React.FC = () => {
           selectedAction === "approve" ? "published" : "unpublished"
         } successfully!`
       );
+      } else if(selectedAction === "reject"){
+        await publishProperty({
+          id: propertyId,
+          data: {
+             action: "REJECT",
+             reviewedBy: user?.fullName,
+             rejectedReason: actionReason
+          },
+        }).unwrap();
+
+        // Close modal and reset state
+        setActionModalOpen(false);
+        setSelectedAction(null);
+        setActionReason("");
+       
+      }
+
+   
     } catch (error) {
       console.error(`Failed to ${selectedAction} property:`, error);
 
@@ -745,6 +767,47 @@ const PropertyDetails: React.FC = () => {
                     ))}
                   </div>
                 )}
+
+                
+              </div>
+            
+              <div className="p-6">
+                <button
+                  onClick={() => toggleSection("documents")}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <File className="w-5 h-5 mr-2" />
+                    Property Documents
+                  </h3>
+                  {expandedSections.documents ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+
+                {expandedSections.documents && property.propertyDocuments && (
+                  <div className="mt-4 space-y-6">
+                    {/* Image categories */}
+                    {property.propertyDocuments?.map((document, categoryIndex) => (
+                      <div key={categoryIndex}>
+                        <h4
+                        className="flex gap-1 items-center"
+                        >
+
+                          <File  className="w-4 h-4 mr-2" />
+
+                       <a href={document} className="underline" target="_blank">Download Now</a>
+                        </h4>
+
+               
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+
               </div>
             </div>
           </div>
@@ -924,18 +987,6 @@ const PropertyDetails: React.FC = () => {
                         Reject Property
                       </>
                     )}
-                  </button>
-
-                  <button
-                    disabled={isPublishing}
-                    className={`w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition-colors ${
-                      !isPublishing
-                        ? "text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                        : "text-gray-400 bg-gray-100 cursor-not-allowed"
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Request Changes
                   </button>
                 </div>
               </div>

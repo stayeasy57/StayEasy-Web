@@ -658,26 +658,7 @@ const AdminDashboard = () => {
         <DashboardStats />
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <RoomAvailabilitySection />
-        <RevenueSection />
-        <div className="flex flex-col gap-4">
-          <RatingSection />
-          <TasksSection />
-        </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <ReservationsSection />
-        <BookingByPlatformSection />
-      </div>
-
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="col-span-3">
-          <BookingList />
-        </div>
-        <RecentActivitiesSection />
-      </div>
     </div>
   );
 };
