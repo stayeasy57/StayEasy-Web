@@ -685,6 +685,21 @@ export const authApi = createApi({
       ],
     }),
 
+    verifyOtp: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/email-verification/verify-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    sendOtp: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/email-verification/send-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
     // For checking if the current token is valid
     getCurrentUser: builder.query<AuthResponse, void>({
       query: () => "/auth/me",
@@ -697,6 +712,8 @@ export const {
   useLoginMutation,
   useSignupMutation,
   useLogoutMutation,
+  useVerifyOtpMutation,
+  useSendOtpMutation,
   useGetPropertiesQuery,
   // CONTACT US
   useSubmitContactFormMutation,

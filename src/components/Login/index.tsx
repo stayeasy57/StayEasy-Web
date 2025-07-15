@@ -14,7 +14,7 @@ import CustomInput from "../ui/CustomInput";
 import CustomCheckbox from "../ui/CustomCheckbox";
 import CustomButton from "../ui/CustomButton";
 
-import { useLoginMutation } from "@/store/api/apiSlice";
+import { useLoginMutation, useSendOtpMutation } from "@/store/api/apiSlice";
 import MessageBar from "../ui/MessageBar";
 
 // Form input types
@@ -48,6 +48,7 @@ const Login = () => {
 
   // api
   const [login, { isLoading, isError, error, data }] = useLoginMutation();
+  const [sendOtp ]  = useSendOtpMutation();
 
   // Form submission handler
   const onSubmit = async (data: any) => {
@@ -57,7 +58,7 @@ const Login = () => {
         password: data.password,
       };
 
-      const response = await login(payload).unwrap();
+      const response : any = await login(payload).unwrap();
 
       if (response?.statusCode === 401) {
         setMessage({
@@ -66,6 +67,33 @@ const Login = () => {
         });
         return;
       } else {
+
+        if(response?.error === 'EMAIL_NOT_VERIFIED'){
+          await sendOtp({
+            userId: response?.data?.userId,
+            userEmail: response?.data?.email,
+            userName: response?.data?.fullName
+          }).unwrap();
+
+          setMessage({
+            text: "OTP sent successfully. Please check your email",
+            type: "success",
+          });
+
+          setTimeout(() => {
+            router.push(`/otp-verification?id=${response?.data?.userId}`);
+          }, 1500);
+
+          return;
+        }
+
+          setMessage({
+          text: response?.message || "Something went wrong",
+          type: "success",
+        });
+
+
+
         dispatch(
           loginSuccess({
             user: response.data?.user,
