@@ -35,6 +35,29 @@ import {
   UsersResponse,
 } from "@/utils/types";
 
+// Interface for properties query with all filter parameters
+export interface PropertyFilters {
+  page?: number;
+  limit?: number;
+  city?: string;
+  gender?: string; // BOYS, GIRLS, OTHER
+  accommodationType?: string; // HOSTEL, PG
+  idealFor?: string; // STUDENTS, WORKING
+  minRating?: number;
+  maxRating?: number;
+  exactRating?: number;
+  ratingAbove?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  hasFood?: boolean;
+  search?: string;
+  occupancyType?: string; // "1 Seater", "2 Seater", etc.
+  // Additional filters that might be useful
+  isActive?: boolean;
+  isPublished?: boolean;
+  propertyGender?: string; // Same as gender, keeping both for compatibility
+}
+
 // Define interfaces for Contact Us List API
 export interface ContactUsItem {
   id: number;
@@ -149,9 +172,107 @@ export const authApi = createApi({
         method: "POST",
       }),
     }),
-    getProperties: builder.query<any, any>({
-      query: (data) => `/properties?page=${data.page}&limit=${data.limit}&city=${data.city}`,
+    
+    // Updated getProperties with comprehensive filtering
+    getProperties: builder.query<any, PropertyFilters>({
+      query: (params = {}) => {
+        const {
+          page = 1,
+          limit = 10,
+          city,
+          gender,
+          accommodationType,
+          idealFor,
+          minRating,
+          maxRating,
+          exactRating,
+          ratingAbove,
+          minPrice,
+          maxPrice,
+          hasFood,
+          search,
+          occupancyType,
+          isActive,
+          isPublished,
+          propertyGender,
+        } = params;
+
+        // Build query string
+        const searchParams = new URLSearchParams();
+        searchParams.append("page", page.toString());
+        searchParams.append("limit", limit.toString());
+
+        // Add filters only if they have values
+        if (city && city.trim()) {
+          searchParams.append("city", city.trim());
+        }
+
+        if (gender && gender !== "all") {
+          searchParams.append("gender", gender);
+        }
+
+        // Support both gender and propertyGender
+        if (propertyGender && propertyGender !== "all") {
+          searchParams.append("gender", propertyGender);
+        }
+
+        if (accommodationType && accommodationType !== "all") {
+          searchParams.append("accommodationType", accommodationType);
+        }
+
+        if (idealFor && idealFor !== "all") {
+          searchParams.append("idealFor", idealFor);
+        }
+
+        if (minRating !== undefined && minRating > 0) {
+          searchParams.append("minRating", minRating.toString());
+        }
+
+        if (maxRating !== undefined && maxRating > 0) {
+          searchParams.append("maxRating", maxRating.toString());
+        }
+
+        if (exactRating !== undefined && exactRating > 0) {
+          searchParams.append("exactRating", exactRating.toString());
+        }
+
+        if (ratingAbove !== undefined && ratingAbove > 0) {
+          searchParams.append("ratingAbove", ratingAbove.toString());
+        }
+
+        if (minPrice !== undefined && minPrice > 0) {
+          searchParams.append("minPrice", minPrice.toString());
+        }
+
+        if (maxPrice !== undefined && maxPrice > 0) {
+          searchParams.append("maxPrice", maxPrice.toString());
+        }
+
+        if (hasFood !== undefined) {
+          searchParams.append("hasFood", hasFood.toString());
+        }
+
+        if (search && search.trim()) {
+          searchParams.append("search", search.trim());
+        }
+
+        if (occupancyType && occupancyType !== "all") {
+          searchParams.append("occupancyType", occupancyType);
+        }
+
+        if (isActive !== undefined) {
+          searchParams.append("isActive", isActive.toString());
+        }
+
+        if (isPublished !== undefined) {
+          searchParams.append("isPublished", isPublished.toString());
+        }
+
+        return `/properties?${searchParams.toString()}`;
+      },
+      providesTags: ["Properties"],
     }),
+    
     getProperty: builder.query<any, any>({
       query: (id) => `/properties/${id}`,
     }),
@@ -172,24 +293,23 @@ export const authApi = createApi({
       providesTags: ["ContactUsStats"],
     }),
 
-
     updateContact: builder.mutation<
-  FullUpdateContactResponse,
-  FullUpdateContactRequest
->({
-  query: ({ id, ...updateData }) => ({
-    url: `/admin/contact-us/${id}`,
-    method: "PATCH",
-    body: updateData,
-  }),
-  invalidatesTags: (result, error, { id }) => [
-    { type: "ContactUsList", id },
-    { type: "ContactUsList", id: "LIST" },
-    "ContactUsList",
-    "ContactUsStats",
-    "ContactUs",
-  ],
-}),
+      FullUpdateContactResponse,
+      FullUpdateContactRequest
+    >({
+      query: ({ id, ...updateData }) => ({
+        url: `/admin/contact-us/${id}`,
+        method: "PATCH",
+        body: updateData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "ContactUsList", id },
+        { type: "ContactUsList", id: "LIST" },
+        "ContactUsList",
+        "ContactUsStats",
+        "ContactUs",
+      ],
+    }),
 
     // Get Contact Us List - NEW ENDPOINT
     getContactUsList: builder.query<
