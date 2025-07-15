@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useGetPropertiesQuery } from "@/store/api/apiSlice";
 import { Skeleton } from "primereact/skeleton";
@@ -82,6 +83,9 @@ const filterData = [
 ];
 
 const HostelListing = () => {
+
+  const searchParams = useSearchParams();
+
   const [selectedFilters, setSelectedFilters] = useState<any>({});
   const [showFilters, setShowFilters] = useState(false);
   const [propertiesList, setPropertiesList] = useState([]);
@@ -95,7 +99,11 @@ const HostelListing = () => {
   const token = useSelector(selectToken);
 
   // API
-  const { data: propertiesData, isLoading } = useGetPropertiesQuery();
+  const { data: propertiesData, isLoading } = useGetPropertiesQuery({
+    limit: 10,
+    page: 1,
+    city: searchParams.get("city"),
+  });
 
   // Check authentication and handle property details navigation
   const handleViewDetails = (hostelId: string) => {
@@ -158,6 +166,7 @@ const HostelListing = () => {
 
   return (
     <div className="bg-gray-100">
+    
       <div className="px-8 pt-8">
         <div className=" border-amber-500 border-8 max-w-[1024px] mx-auto rounded-md flex">
           <input

@@ -149,8 +149,8 @@ export const authApi = createApi({
         method: "POST",
       }),
     }),
-    getProperties: builder.query<any, void>({
-      query: () => "/properties",
+    getProperties: builder.query<any, any>({
+      query: (data) => `/properties?page=${data.page}&limit=${data.limit}&city=${data.city}`,
     }),
     getProperty: builder.query<any, any>({
       query: (id) => `/properties/${id}`,
