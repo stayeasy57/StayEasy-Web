@@ -24,7 +24,7 @@ const CitySection = () => {
               />
 
               <div className="flex justify-center pt-3 mt-2">
-                <Link href="/property-listing">
+                <Link href={`/property-listing?city=${item.name}`}>
                   <Button
                     label="See Hostels"
                     className="bg-primary !font-light !rounded-4xl !py-1 "

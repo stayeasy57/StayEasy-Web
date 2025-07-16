@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import CustomInput from "../ui/CustomInput";
 import CustomSelect from "../ui/CustomSelect";
+import { useRouter } from "next/navigation";
 import CustomButton from "../ui/CustomButton";
 import { useSignupMutation } from "@/store/api/apiSlice";
 import MessageBar from "../ui/MessageBar";
@@ -33,6 +34,9 @@ const initialValues: SignupFormInputs = {
 };
 
 const Signup: React.FC = () => {
+
+  const router = useRouter();
+
   // Initialize react-hook-form
   const {
     register,
@@ -70,6 +74,11 @@ const Signup: React.FC = () => {
           text: "Your account has been created successfully",
           type: "success",
         });
+
+        setTimeout(() => {
+          router.push(`/otp-verification?id=${resp?.data?.id}`);
+        }, 1500);
+
       } else {
         setMessage({
           text: resp?.message || "Something went wrong",
