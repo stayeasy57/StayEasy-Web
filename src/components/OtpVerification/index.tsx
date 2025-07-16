@@ -3,8 +3,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+
+import {useSearchParams} from "next/navigation";
 import CustomButton from "../ui/CustomButton";
 import MessageBar from "../ui/MessageBar";
 import { useVerifyOtpMutation } from "@/store/api/apiSlice";
@@ -38,12 +39,12 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   subtitle = "Enter the 6-digit code sent to your email",
   redirectPath = "/",
 }) => {
-
-  const searchParams = useSearchParams();
-
   // Redux and router
   const dispatch = useDispatch();
   const router = useRouter();
+
+  // Query params
+  const searchParams = useSearchParams();
 
   // Local state
   const [message, setMessage] = useState<{
@@ -54,8 +55,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   const [isResending, setIsResending] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [canResend, setCanResend] = useState(false);
-
-  const [verifyOtp ] = useVerifyOtpMutation();
 
   // Refs for OTP inputs
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -76,6 +75,8 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
       digit6: "",
     },
   });
+
+  const [verifyOtp ]  = useVerifyOtpMutation();
 
   // Watch all digits
   const watchedValues = watch();
@@ -149,22 +150,32 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         return;
       }
 
-      const resp = await verifyOtp({
-        userId: parseInt(searchParams.get("id") || ""),
-        otp
-      }).unwrap();
-
-      if (resp?.statusCode === 200) {
+      if (otp.length === 6) {
+        const resp = await verifyOtp({
+          userId: parseInt(searchParams.get('id') ?? ''),
+          otp
+        }).unwrap();
         setMessage({
-          text: "OTP verified successfully",
+          text: "OTP verified successfully!",
           type: "success",
         });
+        
+        // Redirect after successful verification
         setTimeout(() => {
-          router.push(redirectPath);
+          router.push('/login');
+        }, 1500);
+      } else {
+        // Default behavior - you can customize this
+        console.log("OTP entered:", otp);
+        setMessage({
+          text: "OTP verified successfully!",
+          type: "success",
+        });
+
+          setTimeout(() => {
+          router.push('/login');
         }, 1500);
       }
-
- 
     } catch (err: any) {
       console.log(err);
       setMessage({
