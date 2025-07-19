@@ -131,7 +131,7 @@ const HostelDetail = () => {
           }`}
           onClick={() => scrollToSection(infoRef, "info")}
         >
-          Info & Prices
+         Availability
         </button>
         <button
           className={`px-4 flex-1 py-2 font-medium text-sm ${
@@ -314,7 +314,7 @@ const HostelDetail = () => {
             <img
               src={propertyData?.roomImages[0]}
               alt={hostelImages[0].alt}
-              className="w-full !h-[300px] md:h-full object-contain rounded-lg"
+              className="w-full !h-[300px] md:h-full object-fill rounded-lg"
             />
             <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
               Hotel
@@ -385,7 +385,7 @@ const HostelDetail = () => {
                   alt={hostelImages[5].alt}
                   className="w-full h-24 object-cover rounded-lg"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                <div className="absolute inset-0 bg-black/5 bg-opacity-50 flex items-center justify-center rounded-lg">
                   <span className="text-white font-bold">+24 More</span>
                 </div>
               </div>
@@ -444,45 +444,15 @@ const HostelDetail = () => {
             choice for your stay.
           </p>
 
-          <p className="text-sm text-gray-700 mb-8">
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat."
-          </p>
-
+        
           {/* Property Highlights Card */}
           <div className="bg-blue-100 rounded-lg p-4 mb-8">
             <h3 className="text-lg font-medium mb-4">Property Highlights</h3>
             <p className="text-sm text-gray-700 mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim ven.
+             {propertyData?.description || "No highlights available."}
             </p>
 
-            <div className="flex items-start mb-2">
-              <div className="flex-shrink-0 mt-1">
-                <svg
-                  className="h-5 w-5 text-blue-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <h4 className="text-base font-medium">Loyal Customers</h4>
-                <p className="text-sm text-gray-700">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam.
-                </p>
-              </div>
-            </div>
+   
           </div>
         </div>
       </div>
