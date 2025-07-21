@@ -19,3 +19,4 @@ export { default as LunchIcon } from "./LunchIcon";
 export { default as HighTeaIcon } from "./HighTeaIcon";
 export { default as WifiIcon } from "./WifiIcon";
 export { default as BreakfastIcon } from "./BreakfastIcon";
+export { default as BedIcon } from "./BedIcon";

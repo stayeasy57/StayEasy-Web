@@ -131,7 +131,7 @@ const HostelDetail = () => {
           }`}
           onClick={() => scrollToSection(infoRef, "info")}
         >
-          Info & Prices
+         Availability
         </button>
         <button
           className={`px-4 flex-1 py-2 font-medium text-sm ${
@@ -209,26 +209,13 @@ const HostelDetail = () => {
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
         </div>
-        <button className="ml-2 text-blue-600">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
+      
       </div>
 
       {/* Hostel Title */}
 
       <h1 className="text-3xl font-bold text-blue-800 mb-4">
-        {propertyData?.hostelName}
+        {propertyData?.hostelName} ({propertyData?.propertyGender})
       </h1>
 
       {/* Location with actions */}
@@ -258,13 +245,7 @@ const HostelDetail = () => {
             {propertyData?.hostelAddress}, {propertyData?.hostelCity}
           </span>
           <span className="mx-2">-</span>
-          <a href="#" className="text-blue-600 font-medium">
-            Excellent Location
-          </a>
-          <span className="mx-2">-</span>
-          <a href="#" className="text-blue-600 font-medium">
-            Show Map
-          </a>
+        
         </div>
         <div className="flex items-center">
           <button className="mr-4 text-gray-600" onClick={toggleFavorite}>
@@ -299,9 +280,7 @@ const HostelDetail = () => {
               />
             </svg>
           </button>
-          <button className="bg-blue-600 text-white py-2 px-6 rounded-md font-medium">
-            Reserve
-          </button>
+       
         </div>
       </div>
 
@@ -314,10 +293,10 @@ const HostelDetail = () => {
             <img
               src={propertyData?.roomImages[0]}
               alt={hostelImages[0].alt}
-              className="w-full !h-[300px] md:h-full object-contain rounded-lg"
+              className="w-full !h-[300px] md:h-full object-fill rounded-lg"
             />
             <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-              Hotel
+              {propertyData?.accommodationType}
             </div>
           </div>
 
@@ -379,49 +358,12 @@ const HostelDetail = () => {
                 alt={hostelImages[4].alt}
                 className="w-full h-24 object-cover rounded-lg"
               />
-              <div className="relative">
-                <img
-                  src={hostelImages[5].src}
-                  alt={hostelImages[5].alt}
-                  className="w-full h-24 object-cover rounded-lg"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
-                  <span className="text-white font-bold">+24 More</span>
-                </div>
-              </div>
+            
             </div>
           </div>
 
           {/* Map */}
-          <div className="md:col-span-4 md:row-span-1">
-            <div className="bg-gray-200 rounded-lg w-full h-24 md:h-full relative">
-              <img
-                src="/api/placeholder/600/200"
-                alt="Map"
-                className="w-full h-full object-cover rounded-lg"
-              />
-              <div className="absolute bottom-2 right-2 bg-white py-1 px-2 rounded-full shadow text-xs">
-                4.6 PKR 3,519
-              </div>
-              <button className="absolute bottom-2 left-2 bg-white py-1 px-3 rounded-full shadow-md text-xs text-blue-600 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                </svg>
-                <span>Show full map</span>
-              </button>
-            </div>
-          </div>
+   
         </div>
 
         <div className="mb-8">
@@ -444,45 +386,13 @@ const HostelDetail = () => {
             choice for your stay.
           </p>
 
-          <p className="text-sm text-gray-700 mb-8">
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat."
-          </p>
-
+        
           {/* Property Highlights Card */}
           <div className="bg-blue-100 rounded-lg p-4 mb-8">
             <h3 className="text-lg font-medium mb-4">Property Highlights</h3>
             <p className="text-sm text-gray-700 mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim ven.
-            </p>
-
-            <div className="flex items-start mb-2">
-              <div className="flex-shrink-0 mt-1">
-                <svg
-                  className="h-5 w-5 text-blue-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-2">
-                <h4 className="text-base font-medium">Loyal Customers</h4>
-                <p className="text-sm text-gray-700">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                  Ut enim ad minim veniam.
-                </p>
-              </div>
-            </div>
+             {propertyData?.description || "No highlights available."}
+            </p>   
           </div>
         </div>
       </div>
@@ -588,7 +498,7 @@ const HostelDetail = () => {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <button
-                      className="bg-blue-600 text-white cursor-pointer py-1 px-4 rounded-md font-medium"
+                      className="bg-primary text-white cursor-pointer py-1 px-4 rounded-md font-medium"
                       onClick={() => handleReserve(roomType)}
                     >
                       Reserve
