@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import {useSearchParams} from "next/navigation";
 import CustomButton from "../ui/CustomButton";
 import MessageBar from "../ui/MessageBar";
-import { useVerifyOtpMutation } from "@/store/api/apiSlice";
+import { useVerifyOtpMutation , useVerifyForgotPasswordOtpMutation } from "@/store/api/apiSlice";
 
 // Form input types
 type OTPFormInputs = {
@@ -78,6 +78,8 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   const [verifyOtp ]  = useVerifyOtpMutation();
 
+  const [verifyForgotPasswordOtp ]  = useVerifyForgotPasswordOtpMutation();
+
   // Watch all digits
   const watchedValues = watch();
 
@@ -137,6 +139,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
   // Form submission handler
   const onSubmit = async (data: OTPFormInputs) => {
     try {
+      console.log("data -> ", data);
       setIsLoading(true);
       setMessage(null);
 
@@ -151,6 +154,37 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
       }
 
       if (otp.length === 6) {
+
+        console.log("hi theere");
+        if(localStorage.getItem("forgotPasswordEmail")){
+          localStorage.setItem("forgotPasswordOtp", otp);
+          const resp = await verifyForgotPasswordOtp({
+            email: localStorage.getItem("forgotPasswordEmail"),
+            otp
+          }).unwrap();
+
+            if(resp?.statusCode === 400){
+            setMessage({
+              text: resp?.message || "Failed to reset password",
+              type: "error",
+            });
+            return;
+          }
+          setMessage({
+            text: "OTP verified successfully!",
+            type: "success",
+          });
+
+          console.log("resp -> ", resp);
+
+        
+          
+          // Redirect after successful verification
+          setTimeout(() => {
+            router.push('/set-password');
+          }, 1500);
+        }else {
+
         const resp = await verifyOtp({
           userId: parseInt(searchParams.get('id') ?? ''),
           otp
@@ -164,6 +198,9 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
         setTimeout(() => {
           router.push('/login');
         }, 1500);
+
+        }
+
       } else {
         // Default behavior - you can customize this
         console.log("OTP entered:", otp);
@@ -225,9 +262,12 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
 
   // Create a handler that will be called on button click
   const handleFormSubmit = (e: React.FormEvent) => {
+
     e.preventDefault();
     handleSubmit(onSubmit)();
   };
+
+  console.log('working -> ')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -257,7 +297,7 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({
               {/* OTP Input Fields */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Enter 6-Digit Code
+                  Enter 6-Digit Code 
                 </label>
                 <div className="flex justify-between gap-2">
                   {[1, 2, 3, 4, 5, 6].map((num, index) => {
