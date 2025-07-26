@@ -173,6 +173,14 @@ export const authApi = createApi({
       }),
     }),
     
+    postReview: builder.mutation<any, any>({
+      query: (reviewData) => ({
+        url: "/reviews",
+        method: "POST",
+        body: reviewData,
+      }),
+    }),
+
     // Updated getProperties with comprehensive filtering
     getProperties: builder.query<any, PropertyFilters>({
       query: (params = {}) => {
@@ -715,6 +723,7 @@ export const {
   useVerifyOtpMutation,
   useSendOtpMutation,
   useGetPropertiesQuery,
+  usePostReviewMutation,
   // CONTACT US
   useSubmitContactFormMutation,
   useGetContactUsByIdQuery,
