@@ -2,10 +2,13 @@
 
 import React, { useState } from "react";
 
+import { usePostReviewMutation } from "@/store/api/apiSlice";
+
 interface AddReviewProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (review: ReviewData) => void;
+  id: any;
+  onSubmit?: (review: ReviewData) => void;
 }
 
 interface ReviewData {
@@ -19,6 +22,7 @@ interface ReviewData {
 const AddReviewComponent: React.FC<AddReviewProps> = ({
   isOpen,
   onClose,
+  id,
   onSubmit,
 }) => {
   // State for form inputs
@@ -29,6 +33,9 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
   const [email, setEmail] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errorMessage , setErrorMessage] = useState("");
+
+  const [postReview , {isLoading}] = usePostReviewMutation();
 
   // If the modal is not open, don't render anything
   if (!isOpen) return null;
@@ -46,9 +53,6 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
       newErrors.rating = "Please select a rating";
     }
 
-    if (!title.trim()) {
-      newErrors.title = "Title is required";
-    }
 
     if (!review.trim()) {
       newErrors.review = "Review content is required";
@@ -56,32 +60,39 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
       newErrors.review = "Review must be at least 20 characters";
     }
 
-    if (!name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email is invalid";
-    }
-
+   
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    try{
+
     e.preventDefault();
 
+    console.log('e', review, rating)
+
     if (validateForm()) {
-      setIsSubmitting(true);
+      // setIsSubmitting(true);
+
+      console.log('id', id, rating, review);
+
+      const resp = await postReview({ propertyId : id , rating: rating, review }).unwrap();
+
+      if(resp?.statusCode === 403){
+        setErrorMessage(resp?.message);
+      }else{
+        setErrorMessage("");
+      }
+
+      console.log('resp', resp)
 
       // Simulate API call with timeout
       setTimeout(() => {
-        onSubmit({ rating, title, review, name, email });
-        setIsSubmitting(false);
-        onClose();
+        // onSubmit({ rating, title, review, name, email });
+        // setIsSubmitting(false);
+        // onClose();
 
         // Reset form
         setRating(0);
@@ -91,6 +102,10 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
         setEmail("");
       }, 1000);
     }
+
+  }catch(err){
+    console.log(err)
+  }
   };
 
   return (
@@ -152,27 +167,7 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
             )}
           </div>
 
-          {/* Title */}
-          <div className="mb-4">
-            <label
-              htmlFor="review-title"
-              className="block mb-2 font-medium text-gray-700"
-            >
-              Review Title *
-            </label>
-            <input
-              id="review-title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Summarize your experience"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-            />
-            {errors.title && (
-              <p className="mt-1 text-red-500 text-sm">{errors.title}</p>
-            )}
-          </div>
+       
 
           {/* Review Content */}
           <div className="mb-4">
@@ -198,50 +193,10 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
           </div>
 
           {/* Personal Information */}
-          <div className="mb-4">
-            <label
-              htmlFor="review-name"
-              className="block mb-2 font-medium text-gray-700"
-            >
-              Name *
-            </label>
-            <input
-              id="review-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-            />
-            {errors.name && (
-              <p className="mt-1 text-red-500 text-sm">{errors.name}</p>
+       
+          {errorMessage && (
+              <p className="mt-1 text-red-500 text-sm">Sorry, {errorMessage}</p>
             )}
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="review-email"
-              className="block mb-2 font-medium text-gray-700"
-            >
-              Email *
-            </label>
-            <input
-              id="review-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your email (will not be published)"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-              required
-            />
-            {errors.email && (
-              <p className="mt-1 text-red-500 text-sm">{errors.email}</p>
-            )}
-            <p className="mt-1 text-sm text-gray-500">
-              Your email will not be displayed publicly
-            </p>
-          </div>
 
           {/* Submit Button */}
           <div className="flex justify-end border-t border-gray-200 pt-6">
@@ -261,7 +216,7 @@ const AddReviewComponent: React.FC<AddReviewProps> = ({
                   : "hover:bg-blue-700"
               }`}
             >
-              {isSubmitting ? (
+              {isLoading ? (
                 <span className="flex items-center">
                   <svg
                     className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

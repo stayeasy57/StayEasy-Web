@@ -7,44 +7,49 @@ interface ReviewData {
   review: string;
   name: string;
   email: string;
+  reviews: any;
 }
 
-function ReviewsCarousel() {
+function ReviewsCarousel(props : any) {
+
+  // props
+  const { reviews , propertyId } = props;
+
   // Reviews data
-  const reviews = [
-    {
-      id: 1,
-      name: "TONNY ALEXON",
-      date: "DEC 10, 2024",
-      text: "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLORE MAGNA ALIQUA. UT ENIM AD MINIM VENIAM, QUIS NOSTRUD EXERCITATION ULLAMCO LABORIS NISI.",
-      avatar:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: 2,
-      name: "SARAH JOHNSON",
-      date: "NOV 28, 2024",
-      text: "EXCEPTEUR SINT OCCAECAT CUPIDATAT NON PROIDENT, SUNT IN CULPA QUI OFFICIA DESERUNT MOLLIT ANIM ID EST LABORUM. DUIS AUTE IRURE DOLOR IN REPREHENDERIT IN VOLUPTATE VELIT ESSE CILLUM DOLORE.",
-      avatar:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: 3,
-      name: "JOHN SMITH",
-      date: "OCT 15, 2024",
-      text: "SED UT PERSPICIATIS UNDE OMNIS ISTE NATUS ERROR SIT VOLUPTATEM ACCUSANTIUM DOLOREMQUE LAUDANTIUM, TOTAM REM APERIAM, EAQUE IPSA QUAE AB ILLO INVENTORE VERITATIS ET QUASI ARCHITECTO BEATAE VITAE.",
-      avatar:
-        "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
-    },
-    {
-      id: 4,
-      name: "MARIA RODRIGUEZ",
-      date: "SEP 22, 2024",
-      text: "AT VERO EOS ET ACCUSAMUS ET IUSTO ODIO DIGNISSIMOS DUCIMUS QUI BLANDITIIS PRAESENTIUM VOLUPTATUM DELENITI ATQUE CORRUPTI QUOS DOLORES ET QUAS MOLESTIAS EXCEPTURI SINT OCCAECATI CUPIDITATE NON.",
-      avatar:
-        "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
-    },
-  ];
+  // const reviews = [
+  //   {
+  //     id: 1,
+  //     name: "TONNY ALEXON",
+  //     date: "DEC 10, 2024",
+  //     text: "LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLORE MAGNA ALIQUA. UT ENIM AD MINIM VENIAM, QUIS NOSTRUD EXERCITATION ULLAMCO LABORIS NISI.",
+  //     avatar:
+  //       "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "SARAH JOHNSON",
+  //     date: "NOV 28, 2024",
+  //     text: "EXCEPTEUR SINT OCCAECAT CUPIDATAT NON PROIDENT, SUNT IN CULPA QUI OFFICIA DESERUNT MOLLIT ANIM ID EST LABORUM. DUIS AUTE IRURE DOLOR IN REPREHENDERIT IN VOLUPTATE VELIT ESSE CILLUM DOLORE.",
+  //     avatar:
+  //       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "JOHN SMITH",
+  //     date: "OCT 15, 2024",
+  //     text: "SED UT PERSPICIATIS UNDE OMNIS ISTE NATUS ERROR SIT VOLUPTATEM ACCUSANTIUM DOLOREMQUE LAUDANTIUM, TOTAM REM APERIAM, EAQUE IPSA QUAE AB ILLO INVENTORE VERITATIS ET QUASI ARCHITECTO BEATAE VITAE.",
+  //     avatar:
+  //       "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "MARIA RODRIGUEZ",
+  //     date: "SEP 22, 2024",
+  //     text: "AT VERO EOS ET ACCUSAMUS ET IUSTO ODIO DIGNISSIMOS DUCIMUS QUI BLANDITIIS PRAESENTIUM VOLUPTATUM DELENITI ATQUE CORRUPTI QUOS DOLORES ET QUAS MOLESTIAS EXCEPTURI SINT OCCAECATI CUPIDITATE NON.",
+  //     avatar:
+  //       "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80",
+  //   },
+  // ];
 
   // State
   const [activeIndex, setActiveIndex] = useState(0);
@@ -78,14 +83,16 @@ function ReviewsCarousel() {
 
   // Update visible reviews based on device
   const updateVisibleReviews = () => {
+    if (!reviews) return;
     if (isMobile) {
       setVisibleReviews([reviews[activeIndex]]);
     } else {
       const visibleCards = [];
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < reviews?.length; i++) {
         const index = (activeIndex + i) % reviews.length;
-        visibleCards.push(reviews[index]);
+        visibleCards.push(reviews[i]);
       }
+    
       setVisibleReviews(visibleCards);
     }
   };
@@ -109,7 +116,7 @@ function ReviewsCarousel() {
     setAnimationDirection("slide-left");
 
     setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % reviews.length);
+      setActiveIndex((prev) => (prev + 1) % reviews?.length);
 
       setTimeout(() => {
         setAnimating(false);
@@ -162,7 +169,7 @@ function ReviewsCarousel() {
     }
   };
 
-  return (
+  return  (
     <div className="mb-12">
       <style jsx>{`
         @keyframes slideInRight {
@@ -255,7 +262,10 @@ function ReviewsCarousel() {
         }
       `}</style>
 
-      <div className="relative">
+{
+  visibleReviews?.length > 0 ? (
+
+ <div className="relative">
         <button
           onClick={goToPrev}
           className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md w-10 h-10 flex items-center justify-center hover:bg-blue-50 transition-all hover:scale-110 focus:outline-none"
@@ -297,6 +307,7 @@ function ReviewsCarousel() {
             />
           </svg>
         </button>
+      
 
         {/* Reviews display */}
         <div className="mx-12 overflow-hidden">
@@ -305,22 +316,24 @@ function ReviewsCarousel() {
               animationDirection ? getAnimationClass() : ""
             }`}
           >
-            {visibleReviews.map((review: any, index: any) => (
+
+            {visibleReviews && visibleReviews.map((review: any, index: any) => (
               <div
-                key={review.id}
+                key={index}
                 className={`w-full md:w-1/3 transition-all duration-300 ${
                   !animationDirection && index === 0 ? "animate-fade-in" : ""
                 }`}
               >
+             
                 <div className="h-full border border-gray-300 rounded-md p-4 bg-white shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                   <div className="flex items-center mb-4">
                     <img
-                      src={review.avatar}
-                      alt={review.name}
+                      src="/user.png"
+                      alt='user'
                       className="w-10 h-10 rounded-full mr-3 object-cover"
                     />
                     <div className="flex-1">
-                      <p className="font-bold">{review.name}</p>
+                      <p className="font-bold">{review?.tenant?.tenantName}</p>
                     </div>
                     <div className="flex items-center text-gray-600 text-sm">
                       <svg
@@ -336,10 +349,10 @@ function ReviewsCarousel() {
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <span>{review.date}</span>
+                      <span>{new Date(review?.createdAt).toLocaleString()}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-800">{review.text}</p>
+                  <p className="text-xs text-gray-800">{review?.review}</p>
                 </div>
               </div>
             ))}
@@ -348,7 +361,7 @@ function ReviewsCarousel() {
 
         {/* Pagination indicators */}
         <div className="flex justify-center mt-4">
-          {reviews.map((_, index) => (
+          {reviews?.map((_  :any, index: any) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
@@ -362,6 +375,12 @@ function ReviewsCarousel() {
           ))}
         </div>
       </div>
+  ) : (
+    <div className="flex justify-center items-center h-full">
+      <p className="text-gray-600">No reviews available</p>
+    </div>
+  )}
+     
 
       <div className="flex justify-center mt-6">
         <button
@@ -373,8 +392,9 @@ function ReviewsCarousel() {
       </div>
       <AddReviewComponent
         isOpen={isReviewModalOpen}
+        id={parseInt(propertyId) }
         onClose={() => setIsReviewModalOpen(false)}
-        onSubmit={handleReviewSubmit}
+        // onSubmit={handleReviewSubmit}
       />
     </div>
   );
