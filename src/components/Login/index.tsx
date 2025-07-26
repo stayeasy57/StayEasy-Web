@@ -48,7 +48,7 @@ const Login = () => {
 
   // api
   const [login, { isLoading, isError, error, data }] = useLoginMutation();
-  const [sendOtp ]  = useSendOtpMutation();
+  const [sendOtp] = useSendOtpMutation();
 
   // Form submission handler
   const onSubmit = async (data: any) => {
@@ -58,7 +58,7 @@ const Login = () => {
         password: data.password,
       };
 
-      const response : any = await login(payload).unwrap();
+      const response: any = await login(payload).unwrap();
 
       if (response?.statusCode === 401) {
         setMessage({
@@ -67,12 +67,11 @@ const Login = () => {
         });
         return;
       } else {
-
-        if(response?.error === 'EMAIL_NOT_VERIFIED'){
+        if (response?.error === "EMAIL_NOT_VERIFIED") {
           await sendOtp({
             userId: response?.data?.userId,
             userEmail: response?.data?.email,
-            userName: response?.data?.fullName
+            userName: response?.data?.fullName,
           }).unwrap();
 
           setMessage({
@@ -87,12 +86,10 @@ const Login = () => {
           return;
         }
 
-          setMessage({
+        setMessage({
           text: response?.message || "Something went wrong",
           type: "success",
         });
-
-
 
         dispatch(
           loginSuccess({
@@ -179,12 +176,12 @@ const Login = () => {
                   label="Remember me"
                 />
 
-                <a
-                  href="/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                <span
+                  onClick={() => router.push("/forgot-password")}
+                  className="text-sm text-blue-600 cursor-pointer hover:text-blue-800"
                 >
                   Forgot password?
-                </a>
+                </span>
               </div>
 
               {message?.text && (
@@ -194,13 +191,13 @@ const Login = () => {
               <CustomButton type="submit" label="Log In" loading={isLoading} />
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
-                  Don't have an account?{" "}
-                  <a
-                    href="/signup"
+                  Don't have an account?
+                  <span
+                    onClick={() => router.push("/signup")}
                     className="text-blue-700 font-medium hover:underline"
                   >
                     Sign Up
-                  </a>
+                  </span>
                 </p>
               </div>
             </div>

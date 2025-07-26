@@ -166,6 +166,13 @@ export const authApi = createApi({
         body: userData,
       }),
     }),
+    forgotPassword: builder.mutation<AuthResponse, any>({
+      query: (credentials) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body: credentials,
+      }),
+    }),
     logout: builder.mutation<{ success: boolean }, void>({
       query: () => ({
         url: "/auth/logout",
@@ -700,6 +707,20 @@ export const authApi = createApi({
         body: data,
       }),
     }),
+    verifyForgotPasswordOtp: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/auth/verify-reset-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    resetPassword: builder.mutation<any, any>({
+      query: (data) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
     sendOtp: builder.mutation<any, any>({
       query: (data) => ({
         url: "/email-verification/send-otp",
@@ -719,8 +740,11 @@ export const authApi = createApi({
 export const {
   useLoginMutation,
   useSignupMutation,
+  useForgotPasswordMutation,
   useLogoutMutation,
   useVerifyOtpMutation,
+  useVerifyForgotPasswordOtpMutation,
+  useResetPasswordMutation,
   useSendOtpMutation,
   useGetPropertiesQuery,
   usePostReviewMutation,
